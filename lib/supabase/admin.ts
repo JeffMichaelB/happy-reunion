@@ -1,5 +1,7 @@
 import { createClient } from "@supabase/supabase-js"
 
+import type { Database } from "@/lib/database.types"
+
 /**
  * Service role client — bypasses RLS. Use only in Route Handlers / Server Actions
  * after you have verified the end-user identity with the anon-key server client.
@@ -10,7 +12,7 @@ export function createAdminClient() {
   if (!url || !key) {
     throw new Error("Missing NEXT_PUBLIC_SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY")
   }
-  return createClient(url, key, {
+  return createClient<Database>(url, key, {
     auth: {
       persistSession: false,
       autoRefreshToken: false,

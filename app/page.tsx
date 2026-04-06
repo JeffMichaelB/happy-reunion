@@ -23,10 +23,16 @@ export default async function Page() {
             </p>
             <div className="flex flex-wrap gap-2">
               <Link
+                href="/host"
+                className={cn(buttonVariants({ variant: "default" }))}
+              >
+                Host dashboard
+              </Link>
+              <Link
                 href="/api/google/verify"
                 target="_blank"
                 rel="noreferrer"
-                className={cn(buttonVariants({ variant: "default" }))}
+                className={cn(buttonVariants({ variant: "outline" }))}
               >
                 Verify Google APIs
               </Link>
