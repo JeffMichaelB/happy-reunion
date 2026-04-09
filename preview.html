@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Happy Reunion — Design System Preview</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600&family=Merriweather:wght@700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --cream: #f7f4ed;
+    --charcoal: #1c1c1c;
+    --off-white: #fcfbf8;
+    --muted: #5f5f5d;
+    --border-light: #eceae4;
+    --sidebar-bg: #f3f0e8;
+    --charcoal-83: rgba(28,28,28,0.83);
+    --charcoal-40: rgba(28,28,28,0.4);
+    --charcoal-06: rgba(28,28,28,0.06);
+    --charcoal-04: rgba(28,28,28,0.04);
+    --charcoal-03: rgba(28,28,28,0.03);
+    --ring-blue: rgba(59,130,246,0.5);
+    --error-red: #ef4444;
+    --shadow-inset: rgba(255,255,255,0.2) 0px 0.5px 0px 0px inset, rgba(0,0,0,0.2) 0px 0px 0px 0.5px inset, rgba(0,0,0,0.05) 0px 1px 2px 0px;
+    --font-sans: 'Outfit', ui-sans-serif, system-ui, -apple-system, sans-serif;
+    --font-heading: 'Merriweather', Georgia, serif;
+    --font-mono: ui-monospace, 'SFMono-Regular', 'Cascadia Code', monospace;
+    /* Status colors */
+    --status-draft-bg: #f3f4f6; --status-draft-text: #374151; --status-draft-border: #d1d5db;
+    --status-pending-bg: #fef3c7; --status-pending-text: #92400e; --status-pending-border: #fcd34d;
+    --status-confirmed-bg: #dcfce7; --status-confirmed-text: #166534; --status-confirmed-border: #86efac;
+    --status-recorded-bg: #dbeafe; --status-recorded-text: #1e40af; --status-recorded-border: #93c5fd;
+    --status-published-bg: #f3e8ff; --status-published-text: #6b21a8; --status-published-border: #c4b5fd;
+    --status-cancelled-bg: #fee2e2; --status-cancelled-text: #991b1b; --status-cancelled-border: #fca5a5;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: var(--cream);
+    color: var(--charcoal);
+    font-family: var(--font-sans);
+    font-size: 16px; font-weight: 400; line-height: 1.50;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* NAV */
+  .nav {
+    position: sticky; top: 0; z-index: 100;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 12px 32px;
+    background: rgba(247,244,237,0.88);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border-light);
+  }
+  .nav-brand { font-size: 16px; font-weight: 600; color: var(--charcoal); text-decoration: none; letter-spacing: -0.3px; }
+  .nav-links { display: flex; gap: 24px; list-style: none; }
+  .nav-links a { font-size: 14px; font-weight: 400; color: var(--muted); text-decoration: none; transition: color 0.15s; }
+  .nav-links a:hover { color: var(--charcoal); }
+  .nav-cta {
+    display: inline-block; background: var(--charcoal); color: var(--off-white);
+    padding: 8px 16px; border-radius: 6px; font-size: 14px; font-weight: 500;
+    text-decoration: none; transition: opacity 0.15s;
+    box-shadow: var(--shadow-inset);
+  }
+  .nav-cta:hover { opacity: 0.85; }
+
+  /* HERO */
+  .hero { padding: 80px 32px 64px; text-align: center; }
+  .hero h1 {
+    font-family: var(--font-sans);
+    font-size: 48px; font-weight: 600; line-height: 1.10;
+    letter-spacing: -1.2px; color: var(--charcoal); margin-bottom: 16px;
+  }
+  .hero p { font-size: 18px; font-weight: 400; line-height: 1.40; color: var(--muted); max-width: 560px; margin: 0 auto 32px; }
+  .hero-buttons { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+  .btn-dark {
+    display: inline-block; background: var(--charcoal); color: var(--off-white);
+    padding: 10px 20px; border-radius: 6px; border: none;
+    font-family: var(--font-sans); font-size: 14px; font-weight: 500;
+    text-decoration: none; cursor: pointer; transition: opacity 0.15s;
+    box-shadow: var(--shadow-inset);
+  }
+  .btn-dark:hover { opacity: 0.85; }
+  .btn-dark:active { transform: translateY(1px); }
+  .btn-ghost {
+    display: inline-block; background: transparent; color: var(--charcoal);
+    padding: 10px 20px; border-radius: 6px;
+    border: 1px solid var(--charcoal-40);
+    font-family: var(--font-sans); font-size: 14px; font-weight: 500;
+    text-decoration: none; cursor: pointer; transition: background 0.15s;
+  }
+  .btn-ghost:hover { background: var(--charcoal-04); }
+  .btn-destructive {
+    display: inline-block; background: rgba(239,68,68,0.1); color: var(--error-red);
+    padding: 10px 20px; border-radius: 6px; border: none;
+    font-family: var(--font-sans); font-size: 14px; font-weight: 500;
+    text-decoration: none; cursor: pointer; transition: background 0.15s;
+  }
+  .btn-destructive:hover { background: rgba(239,68,68,0.2); }
+  .btn-ghost-noborder {
+    display: inline-block; background: transparent; color: var(--charcoal);
+    padding: 10px 20px; border-radius: 6px; border: none;
+    font-family: var(--font-sans); font-size: 14px; font-weight: 500;
+    text-decoration: none; cursor: pointer; transition: background 0.15s;
+  }
+  .btn-ghost-noborder:hover { background: var(--charcoal-04); }
+
+  /* SECTIONS */
+  .section { padding: 64px 32px; max-width: 1152px; margin: 0 auto; }
+  .section-label { font-size: 12px; font-weight: 500; color: var(--muted); text-transform: uppercase; margin-bottom: 8px; letter-spacing: 0.5px; }
+  .section-title { font-size: 36px; font-weight: 600; line-height: 1.10; letter-spacing: -0.9px; margin-bottom: 32px; }
+  .section-divider { border: none; border-top: 1px solid var(--border-light); margin: 0; }
+
+  /* COLORS */
+  .color-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(155px, 1fr)); gap: 12px; margin-bottom: 24px; }
+  .color-swatch { border-radius: 12px; overflow: hidden; border: 1px solid var(--border-light); }
+  .color-swatch-block { height: 72px; width: 100%; }
+  .color-swatch-info { padding: 10px 12px; }
+  .color-swatch-name { font-size: 13px; font-weight: 600; margin-bottom: 2px; }
+  .color-swatch-hex { font-size: 12px; color: var(--muted); font-family: var(--font-mono); }
+  .color-swatch-role { font-size: 11px; color: var(--muted); margin-top: 3px; }
+  .color-group-label { font-size: 14px; font-weight: 600; color: var(--muted); margin: 24px 0 10px; }
+
+  /* TYPOGRAPHY */
+  .type-sample { margin-bottom: 28px; padding-bottom: 24px; border-bottom: 1px solid var(--border-light); }
+  .type-sample:last-child { border-bottom: none; }
+  .type-meta { font-size: 12px; font-weight: 500; color: var(--muted); margin-top: 8px; font-family: var(--font-mono); }
+
+  /* STATUS BADGES */
+  .badge-row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin-bottom: 32px; }
+  .badge {
+    display: inline-block; font-size: 12px; font-weight: 500;
+    padding: 2px 10px; border-radius: 9999px; border: 1px solid;
+  }
+
+  /* BUTTONS */
+  .button-row { display: flex; gap: 16px; flex-wrap: wrap; align-items: center; }
+  .button-item { text-align: center; }
+  .button-label { font-size: 12px; font-weight: 500; color: var(--muted); margin-top: 8px; }
+
+  /* CARDS */
+  .card-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 20px; }
+  .card {
+    background: var(--cream); border-radius: 12px; padding: 24px;
+    border: 1px solid var(--border-light); transition: border-color 0.2s;
+  }
+  .card:hover { border-color: var(--charcoal-40); }
+  .card h3 { font-size: 20px; font-weight: 500; margin-bottom: 4px; }
+  .card-meta { font-size: 13px; font-family: var(--font-mono); color: var(--muted); margin-bottom: 8px; }
+  .card p { font-size: 14px; color: var(--muted); line-height: 1.50; }
+
+  /* FORMS */
+  .form-group { margin-bottom: 20px; max-width: 400px; }
+  .form-label { display: block; font-size: 14px; font-weight: 500; color: var(--charcoal); margin-bottom: 6px; }
+  .form-input {
+    width: 100%; background: var(--cream); color: var(--charcoal);
+    border: 1px solid var(--border-light); padding: 10px 12px; border-radius: 6px;
+    font-family: var(--font-sans); font-size: 14px; outline: none;
+    transition: border-color 0.15s, box-shadow 0.15s;
+  }
+  .form-input:focus { border-color: transparent; box-shadow: 0 0 0 2px var(--ring-blue); }
+  .form-input--focus { border-color: transparent; box-shadow: 0 0 0 2px var(--ring-blue); }
+  .form-input--error { border-color: transparent; box-shadow: 0 0 0 2px var(--error-red); }
+  .form-textarea {
+    width: 100%; min-height: 80px; background: var(--cream); color: var(--charcoal);
+    border: 1px solid var(--border-light); padding: 10px 12px; border-radius: 6px;
+    font-family: var(--font-sans); font-size: 14px; resize: vertical; outline: none;
+    transition: border-color 0.15s, box-shadow 0.15s;
+  }
+  .form-textarea:focus { border-color: transparent; box-shadow: 0 0 0 2px var(--ring-blue); }
+  .form-state-label { font-size: 11px; color: var(--muted); margin-top: 4px; }
+
+  /* SIDEBAR PREVIEW */
+  .sidebar-preview {
+    display: flex; border: 1px solid var(--border-light); border-radius: 12px;
+    overflow: hidden; max-width: 720px;
+  }
+  .sidebar-nav {
+    width: 208px; background: var(--sidebar-bg); border-right: 1px solid var(--border-light);
+    padding: 20px 12px; flex-shrink: 0;
+  }
+  .sidebar-header { padding: 0 8px 16px; border-bottom: 1px solid var(--border-light); margin-bottom: 12px; }
+  .sidebar-header-label { font-size: 12px; font-weight: 500; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; }
+  .sidebar-header-email { font-size: 12px; font-family: var(--font-mono); color: var(--muted); margin-top: 2px; word-break: break-all; }
+  .sidebar-link {
+    display: block; padding: 8px 12px; border-radius: 6px;
+    font-size: 14px; font-weight: 500; color: var(--charcoal);
+    text-decoration: none; transition: background 0.15s; margin-bottom: 2px;
+  }
+  .sidebar-link:hover { background: var(--charcoal-04); }
+  .sidebar-link.active { background: var(--charcoal-06); border-left: 2px solid var(--charcoal); }
+  .sidebar-content { flex: 1; padding: 24px 32px; }
+  .sidebar-content h2 { font-size: 36px; font-weight: 600; letter-spacing: -0.9px; line-height: 1.10; }
+  .sidebar-content p { font-size: 14px; color: var(--muted); margin-top: 8px; }
+
+  /* SPACING */
+  .spacing-row { display: flex; align-items: flex-end; gap: 10px; flex-wrap: wrap; margin-bottom: 24px; }
+  .spacing-item { text-align: center; }
+  .spacing-block { background: var(--charcoal); border-radius: 3px; margin-bottom: 6px; height: 28px; }
+  .spacing-value { font-family: var(--font-mono); font-size: 11px; font-weight: 500; color: var(--muted); }
+
+  /* RADIUS */
+  .radius-row { display: flex; gap: 14px; flex-wrap: wrap; align-items: center; }
+  .radius-item { text-align: center; }
+  .radius-box { width: 64px; height: 64px; background: var(--charcoal); margin-bottom: 6px; }
+  .radius-label { font-family: var(--font-mono); font-size: 11px; font-weight: 500; color: var(--muted); }
+  .radius-context { font-size: 10px; color: var(--muted); }
+
+  /* ELEVATION */
+  .elevation-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; }
+  .elevation-card { background: var(--cream); border-radius: 12px; padding: 20px; text-align: center; }
+  .elevation-label { font-size: 14px; font-weight: 600; margin-bottom: 4px; }
+  .elevation-desc { font-family: var(--font-mono); font-size: 11px; color: var(--muted); }
+
+  /* TABLE PREVIEW */
+  .table-wrap { border: 1px solid var(--border-light); border-radius: 12px; overflow: hidden; max-width: 720px; }
+  .table-preview { width: 100%; border-collapse: collapse; }
+  .table-preview th {
+    text-align: left; font-size: 12px; font-weight: 500; color: var(--muted);
+    text-transform: uppercase; letter-spacing: 0.5px;
+    padding: 12px 16px; border-bottom: 1px solid var(--border-light);
+  }
+  .table-preview td { padding: 12px 16px; font-size: 14px; border-bottom: 1px solid var(--border-light); }
+  .table-preview tr:last-child td { border-bottom: none; }
+  .table-preview tr:hover td { background: var(--charcoal-03); }
+  .table-preview .mono { font-family: var(--font-mono); font-size: 13px; color: var(--muted); }
+
+  /* FOOTER */
+  .footer { padding: 32px; text-align: center; border-top: 1px solid var(--border-light); font-size: 13px; color: var(--muted); }
+  .footer a { color: var(--charcoal); text-decoration: underline; }
+
+  @media (max-width: 768px) {
+    .hero h1 { font-size: 36px; letter-spacing: -0.9px; }
+    .nav-links { display: none; }
+    .section { padding: 48px 20px; }
+    .card-grid { grid-template-columns: 1fr; }
+    .sidebar-preview { flex-direction: column; }
+    .sidebar-nav { width: 100%; border-right: none; border-bottom: 1px solid var(--border-light); }
+  }
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <a class="nav-brand" href="#">Happy Reunion</a>
+  <ul class="nav-links">
+    <li><a href="#colors">Colors</a></li>
+    <li><a href="#typography">Typography</a></li>
+    <li><a href="#status">Status</a></li>
+    <li><a href="#buttons">Buttons</a></li>
+    <li><a href="#sidebar">Sidebar</a></li>
+    <li><a href="#cards">Cards</a></li>
+    <li><a href="#forms">Forms</a></li>
+    <li><a href="#table">Table</a></li>
+  </ul>
+  <a class="nav-cta" href="#">Host Dashboard</a>
+</nav>
+
+<section class="hero">
+  <h1>Podcast Scheduling<br>& Guest Management</h1>
+  <p>Design system for Happy Reunion — a platform that automates podcast episode scheduling and guest management. Light theme only.</p>
+  <div class="hero-buttons">
+    <a class="btn-dark" href="#">Create Episode</a>
+    <a class="btn-ghost" href="#">View DESIGN.md</a>
+  </div>
+</section>
+
+<hr class="section-divider">
+
+<!-- 1. COLORS -->
+<section class="section" id="colors">
+  <div class="section-label">01 / Colors</div>
+  <h2 class="section-title">Color Palette</h2>
+
+  <div class="color-group-label">Foundation</div>
+  <div class="color-grid">
+    <div class="color-swatch"><div class="color-swatch-block" style="background:#f7f4ed; border-bottom:1px solid #eceae4"></div><div class="color-swatch-info"><div class="color-swatch-name">Cream</div><div class="color-swatch-hex">#f7f4ed</div><div class="color-swatch-role">Page background</div></div></div>
+    <div class="color-swatch"><div class="color-swatch-block" style="background:#1c1c1c"></div><div class="color-swatch-info"><div class="color-swatch-name">Charcoal</div><div class="color-swatch-hex">#1c1c1c</div><div class="color-swatch-role">Text, headings, CTAs</div></div></div>
+    <div class="color-swatch"><div class="color-swatch-block" style="background:#fcfbf8; border-bottom:1px solid #eceae4"></div><div class="color-swatch-info"><div class="color-swatch-name">Off-White</div><div class="color-swatch-hex">#fcfbf8</div><div class="color-swatch-role">Button text on dark</div></div></div>
+  </div>
+
+  <div class="color-group-label">Neutral Scale (Opacity-Based)</div>
+  <div class="color-grid">
+    <div class="color-swatch"><div class="color-swatch-block" style="background:rgba(28,28,28,0.83)"></div><div class="color-swatch-info"><div class="color-swatch-name">Charcoal 83%</div><div class="color-swatch-hex">rgba(28,28,28,0.83)</div><div class="color-swatch-role">Strong secondary</div></div></div>
+    <div class="color-swatch"><div class="color-swatch-block" style="background:#5f5f5d"></div><div class="color-swatch-info"><div class="color-swatch-name">Muted Gray</div><div class="color-swatch-hex">#5f5f5d</div><div class="color-swatch-role">Body text, captions</div></div></div>
+    <div class="color-swatch"><div class="color-swatch-block" style="background:rgba(28,28,28,0.4)"></div><div class="color-swatch-info"><div class="color-swatch-name">Charcoal 40%</div><div class="color-swatch-hex">rgba(28,28,28,0.4)</div><div class="color-swatch-role">Interactive borders</div></div></div>
+    <div class="color-swatch"><div class="color-swatch-block" style="background:rgba(28,28,28,0.04); border-bottom:1px solid #eceae4"></div><div class="color-swatch-info"><div class="color-swatch-name">Charcoal 4%</div><div class="color-swatch-hex">rgba(28,28,28,0.04)</div><div class="color-swatch-role">Hover tint</div></div></div>
+    <div class="color-swatch"><div class="color-swatch-block" style="background:rgba(28,28,28,0.03); border-bottom:1px solid #eceae4"></div><div class="color-swatch-info"><div class="color-swatch-name">Charcoal 3%</div><div class="color-swatch-hex">rgba(28,28,28,0.03)</div><div class="color-swatch-role">Row hover</div></div></div>
+  </div>
+
+  <div class="color-group-label">Surface & Border</div>
+  <div class="color-grid">
+    <div class="color-swatch"><div class="color-swatch-block" style="background:#eceae4"></div><div class="color-swatch-info"><div class="color-swatch-name">Light Cream</div><div class="color-swatch-hex">#eceae4</div><div class="color-swatch-role">Borders, dividers</div></div></div>
+    <div class="color-swatch"><div class="color-swatch-block" style="background:#f3f0e8; border-bottom:1px solid #eceae4"></div><div class="color-swatch-info"><div class="color-swatch-name">Sidebar Cream</div><div class="color-swatch-hex">#f3f0e8</div><div class="color-swatch-role">Sidebar background</div></div></div>
+  </div>
+
+  <div class="color-group-label">Interactive</div>
+  <div class="color-grid">
+    <div class="color-swatch"><div class="color-swatch-block" style="background:rgba(59,130,246,0.5)"></div><div class="color-swatch-info"><div class="color-swatch-name">Ring Blue</div><div class="color-swatch-hex">rgba(59,130,246,0.5)</div><div class="color-swatch-role">Focus ring</div></div></div>
+    <div class="color-swatch"><div class="color-swatch-block" style="background:#ef4444"></div><div class="color-swatch-info"><div class="color-swatch-name">Error Red</div><div class="color-swatch-hex">#ef4444</div><div class="color-swatch-role">Error ring, destructive</div></div></div>
+  </div>
+</section>
+
+<hr class="section-divider">
+
+<!-- 2. STATUS BADGES -->
+<section class="section" id="status">
+  <div class="section-label">02 / Episode Status</div>
+  <h2 class="section-title">Status Badges</h2>
+  <p style="font-size:14px; color:var(--muted); margin-bottom:24px;">The only saturated colors in the system. Reserved for episode lifecycle states.</p>
+  <div class="badge-row">
+    <span class="badge" style="background:var(--status-draft-bg); color:var(--status-draft-text); border-color:var(--status-draft-border);">Draft</span>
+    <span class="badge" style="background:var(--status-pending-bg); color:var(--status-pending-text); border-color:var(--status-pending-border);">Pending Guest</span>
+    <span class="badge" style="background:var(--status-confirmed-bg); color:var(--status-confirmed-text); border-color:var(--status-confirmed-border);">Confirmed</span>
+    <span class="badge" style="background:var(--status-recorded-bg); color:var(--status-recorded-text); border-color:var(--status-recorded-border);">Recorded</span>
+    <span class="badge" style="background:var(--status-published-bg); color:var(--status-published-text); border-color:var(--status-published-border);">Published</span>
+    <span class="badge" style="background:var(--status-cancelled-bg); color:var(--status-cancelled-text); border-color:var(--status-cancelled-border);">Cancelled</span>
+  </div>
+
+  <div class="color-group-label">Status Color Swatches</div>
+  <div class="color-grid">
+    <div class="color-swatch"><div class="color-swatch-block" style="background:#f3f4f6; border-bottom:1px solid #d1d5db"></div><div class="color-swatch-info"><div class="color-swatch-name">Draft</div><div class="color-swatch-hex">#f3f4f6 / #374151</div><div class="color-swatch-role">Not yet sent</div></div></div>
+    <div class="color-swatch"><div class="color-swatch-block" style="background:#fef3c7; border-bottom:1px solid #fcd34d"></div><div class="color-swatch-info"><div class="color-swatch-name">Pending</div><div class="color-swatch-hex">#fef3c7 / #92400e</div><div class="color-swatch-role">Awaiting response</div></div></div>
+    <div class="color-swatch"><div class="color-swatch-block" style="background:#dcfce7; border-bottom:1px solid #86efac"></div><div class="color-swatch-info"><div class="color-swatch-name">Confirmed</div><div class="color-swatch-hex">#dcfce7 / #166534</div><div class="color-swatch-role">Locked in</div></div></div>
+    <div class="color-swatch"><div class="color-swatch-block" style="background:#dbeafe; border-bottom:1px solid #93c5fd"></div><div class="color-swatch-info"><div class="color-swatch-name">Recorded</div><div class="color-swatch-hex">#dbeafe / #1e40af</div><div class="color-swatch-role">Recording done</div></div></div>
+    <div class="color-swatch"><div class="color-swatch-block" style="background:#f3e8ff; border-bottom:1px solid #c4b5fd"></div><div class="color-swatch-info"><div class="color-swatch-name">Published</div><div class="color-swatch-hex">#f3e8ff / #6b21a8</div><div class="color-swatch-role">Episode live</div></div></div>
+    <div class="color-swatch"><div class="color-swatch-block" style="background:#fee2e2; border-bottom:1px solid #fca5a5"></div><div class="color-swatch-info"><div class="color-swatch-name">Cancelled</div><div class="color-swatch-hex">#fee2e2 / #991b1b</div><div class="color-swatch-role">Cancelled</div></div></div>
+  </div>
+</section>
+
+<hr class="section-divider">
+
+<!-- 3. TYPOGRAPHY -->
+<section class="section" id="typography">
+  <div class="section-label">03 / Typography</div>
+  <h2 class="section-title">Typography Scale</h2>
+
+  <div class="type-sample"><div style="font-family:var(--font-heading); font-size:40px; font-weight:700; line-height:1.15; letter-spacing:-0.5px;">Schedule Hero (Merriweather)</div><div class="type-meta">Schedule Hero — Merriweather 40px / 700 / 1.15 / -0.5px — public scheduling page only</div></div>
+  <div class="type-sample"><div style="font-size:36px; font-weight:600; line-height:1.10; letter-spacing:-0.9px;">Page Title</div><div class="type-meta">Page Title — Outfit 36px / 600 / 1.10 / -0.9px — text-4xl font-semibold tracking-tight</div></div>
+  <div class="type-sample"><div style="font-size:24px; font-weight:600; line-height:1.20; letter-spacing:-0.5px;">Section Heading</div><div class="type-meta">Section Heading — Outfit 24px / 600 / 1.20 / -0.5px — text-2xl font-semibold tracking-tight</div></div>
+  <div class="type-sample"><div style="font-size:20px; font-weight:500; line-height:1.25;">Card Title</div><div class="type-meta">Card Title — Outfit 20px / 500 / 1.25 — text-xl font-medium</div></div>
+  <div class="type-sample"><div style="font-size:18px; font-weight:400; line-height:1.40;">Body Large — Automate your podcast scheduling. Manage guests, episodes, and communications from one dashboard.</div><div class="type-meta">Body Large — Outfit 18px / 400 / 1.40 — text-lg</div></div>
+  <div class="type-sample"><div style="font-size:16px; font-weight:400; line-height:1.50;">Body — Standard reading text for descriptions, paragraphs, and dashboard content.</div><div class="type-meta">Body — Outfit 16px / 400 / 1.50 — text-base</div></div>
+  <div class="type-sample"><div style="font-size:14px; font-weight:500;">Button / Label text</div><div class="type-meta">Button — Outfit 14px / 500 / 1.00 — text-sm font-medium</div></div>
+  <div class="type-sample"><div style="font-size:12px; font-weight:500; text-transform:uppercase; letter-spacing:0.5px; color:var(--muted);">SECTION LABEL</div><div class="type-meta">Section Label — Outfit 12px / 500 / uppercase / 0.5px — text-xs font-medium uppercase tracking-wider</div></div>
+  <div class="type-sample"><div style="font-size:14px; font-weight:400; color:var(--muted);">Caption — Metadata and small descriptions</div><div class="type-meta">Caption — Outfit 14px / 400 / text-muted-foreground — text-sm text-muted-foreground</div></div>
+  <div class="type-sample"><div style="font-family:var(--font-mono); font-size:13px; font-weight:400; color:var(--muted);">sarah@podcast.com · Apr 12, 2026 · abc-123-def</div><div class="type-meta">Mono Data — Geist Mono 13px / 400 — font-mono text-[13px] text-muted-foreground</div></div>
+</section>
+
+<hr class="section-divider">
+
+<!-- 4. BUTTONS -->
+<section class="section" id="buttons">
+  <div class="section-label">04 / Buttons</div>
+  <h2 class="section-title">Button Variants</h2>
+  <div class="button-row">
+    <div class="button-item"><button class="btn-dark">Create Episode</button><div class="button-label">Primary Dark</div></div>
+    <div class="button-item"><button class="btn-ghost">Back</button><div class="button-label">Ghost / Outline</div></div>
+    <div class="button-item"><button class="btn-destructive">Cancel Episode</button><div class="button-label">Destructive</div></div>
+    <div class="button-item"><button class="btn-ghost-noborder">Settings</button><div class="button-label">Ghost (no border)</div></div>
+  </div>
+</section>
+
+<hr class="section-divider">
+
+<!-- 5. SIDEBAR -->
+<section class="section" id="sidebar">
+  <div class="section-label">05 / Sidebar</div>
+  <h2 class="section-title">Dashboard Layout</h2>
+  <div class="sidebar-preview">
+    <nav class="sidebar-nav">
+      <div class="sidebar-header">
+        <div class="sidebar-header-label">Host</div>
+        <div class="sidebar-header-email">sarah@podcast.com</div>
+      </div>
+      <a class="sidebar-link active" href="#">Dashboard</a>
+      <a class="sidebar-link" href="#">Guests</a>
+      <a class="sidebar-link" href="#">Episodes</a>
+      <a class="sidebar-link" href="#">Calendar</a>
+      <a class="sidebar-link" href="#">Templates</a>
+      <a class="sidebar-link" href="#">Settings</a>
+    </nav>
+    <div class="sidebar-content">
+      <h2>Dashboard</h2>
+      <p>Upcoming episodes, recent activity, and quick stats.</p>
+    </div>
+  </div>
+</section>
+
+<hr class="section-divider">
+
+<!-- 6. CARDS -->
+<section class="section" id="cards">
+  <div class="section-label">06 / Cards</div>
+  <h2 class="section-title">Episode & Guest Cards</h2>
+  <div class="card-grid">
+    <div class="card">
+      <span class="badge" style="background:var(--status-confirmed-bg); color:var(--status-confirmed-text); border-color:var(--status-confirmed-border); margin-bottom:12px;">Confirmed</span>
+      <h3>AI in Healthcare</h3>
+      <div class="card-meta">jane@example.com · Apr 12, 2026</div>
+      <p>Discussion on FDA approvals, diagnostic AI, and the future of personalized medicine.</p>
+    </div>
+    <div class="card" style="border-color: var(--charcoal-40);">
+      <span class="badge" style="background:var(--status-pending-bg); color:var(--status-pending-text); border-color:var(--status-pending-border); margin-bottom:12px;">Pending Guest</span>
+      <h3>Startup Funding Strategies</h3>
+      <div class="card-meta">mark@startup.co · Apr 18, 2026</div>
+      <p>Seed rounds, Series A readiness, and investor pitch tactics. Hover state shown on this card.</p>
+    </div>
+    <div class="card">
+      <span class="badge" style="background:var(--status-published-bg); color:var(--status-published-text); border-color:var(--status-published-border); margin-bottom:12px;">Published</span>
+      <h3>Design Systems at Scale</h3>
+      <div class="card-meta">amy@tech.io · Mar 28, 2026</div>
+      <p>Component libraries, design tokens, and maintaining consistency across 50+ engineers.</p>
+    </div>
+  </div>
+</section>
+
+<hr class="section-divider">
+
+<!-- 7. FORMS -->
+<section class="section" id="forms">
+  <div class="section-label">07 / Forms</div>
+  <h2 class="section-title">Form Elements</h2>
+  <div class="form-group"><label class="form-label">Guest Email</label><input class="form-input" type="email" placeholder="guest@example.com"><div class="form-state-label">Default</div></div>
+  <div class="form-group"><label class="form-label">Episode Topic</label><input class="form-input form-input--focus" type="text" value="AI in Healthcare"><div class="form-state-label">Focus (blue ring)</div></div>
+  <div class="form-group"><label class="form-label">Riverside URL</label><input class="form-input form-input--error" type="url" value="not-a-valid-url"><div class="form-state-label">Error (red ring)</div></div>
+  <div class="form-group"><label class="form-label">Notes for Guest</label><textarea class="form-textarea" placeholder="Any prep notes or talking points..."></textarea></div>
+</section>
+
+<hr class="section-divider">
+
+<!-- 8. TABLE -->
+<section class="section" id="table">
+  <div class="section-label">08 / Tables</div>
+  <h2 class="section-title">Episode List</h2>
+  <div class="table-wrap">
+    <table class="table-preview">
+      <thead>
+        <tr><th>Date</th><th>Guest</th><th>Topic</th><th>Status</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="mono">Apr 12, 2026</td>
+          <td>Jane Smith</td>
+          <td>AI in Healthcare</td>
+          <td><span class="badge" style="background:var(--status-confirmed-bg); color:var(--status-confirmed-text); border-color:var(--status-confirmed-border);">Confirmed</span></td>
+        </tr>
+        <tr>
+          <td class="mono">Apr 18, 2026</td>
+          <td>Mark Rivera</td>
+          <td>Startup Funding</td>
+          <td><span class="badge" style="background:var(--status-pending-bg); color:var(--status-pending-text); border-color:var(--status-pending-border);">Pending</span></td>
+        </tr>
+        <tr>
+          <td class="mono">Mar 28, 2026</td>
+          <td>Amy Torres</td>
+          <td>Design Systems</td>
+          <td><span class="badge" style="background:var(--status-recorded-bg); color:var(--status-recorded-text); border-color:var(--status-recorded-border);">Recorded</span></td>
+        </tr>
+        <tr>
+          <td class="mono">Mar 15, 2026</td>
+          <td>Tom Kim</td>
+          <td>Growth Marketing</td>
+          <td><span class="badge" style="background:var(--status-published-bg); color:var(--status-published-text); border-color:var(--status-published-border);">Published</span></td>
+        </tr>
+        <tr>
+          <td class="mono">Feb 22, 2026</td>
+          <td>Lisa Chen</td>
+          <td>Product-Led Growth</td>
+          <td><span class="badge" style="background:var(--status-cancelled-bg); color:var(--status-cancelled-text); border-color:var(--status-cancelled-border);">Cancelled</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<hr class="section-divider">
+
+<!-- 9. SPACING -->
+<section class="section" id="spacing">
+  <div class="section-label">09 / Spacing</div>
+  <h2 class="section-title">Spacing Scale</h2>
+  <div class="spacing-row">
+    <div class="spacing-item"><div class="spacing-block" style="width:4px"></div><div class="spacing-value">4</div></div>
+    <div class="spacing-item"><div class="spacing-block" style="width:8px"></div><div class="spacing-value">8</div></div>
+    <div class="spacing-item"><div class="spacing-block" style="width:12px"></div><div class="spacing-value">12</div></div>
+    <div class="spacing-item"><div class="spacing-block" style="width:16px"></div><div class="spacing-value">16</div></div>
+    <div class="spacing-item"><div class="spacing-block" style="width:24px"></div><div class="spacing-value">24</div></div>
+    <div class="spacing-item"><div class="spacing-block" style="width:32px"></div><div class="spacing-value">32</div></div>
+    <div class="spacing-item"><div class="spacing-block" style="width:40px"></div><div class="spacing-value">40</div></div>
+    <div class="spacing-item"><div class="spacing-block" style="width:64px"></div><div class="spacing-value">64</div></div>
+  </div>
+</section>
+
+<hr class="section-divider">
+
+<!-- 10. RADIUS -->
+<section class="section" id="radius">
+  <div class="section-label">10 / Radius</div>
+  <h2 class="section-title">Border Radius Scale</h2>
+  <div class="radius-row">
+    <div class="radius-item"><div class="radius-box" style="border-radius:6px"></div><div class="radius-label">6px</div><div class="radius-context">Buttons, inputs</div></div>
+    <div class="radius-item"><div class="radius-box" style="border-radius:12px"></div><div class="radius-label">12px</div><div class="radius-context">Cards, tables</div></div>
+    <div class="radius-item"><div class="radius-box" style="border-radius:16px"></div><div class="radius-label">16px</div><div class="radius-context">Containers</div></div>
+    <div class="radius-item"><div class="radius-box" style="border-radius:9999px"></div><div class="radius-label">9999px</div><div class="radius-context">Badges, avatars</div></div>
+  </div>
+</section>
+
+<hr class="section-divider">
+
+<!-- 11. ELEVATION -->
+<section class="section" id="elevation">
+  <div class="section-label">11 / Elevation</div>
+  <h2 class="section-title">Depth & Elevation</h2>
+  <div class="elevation-grid">
+    <div class="elevation-card" style="border: 1px solid var(--border-light);"><div class="elevation-label">Level 0: Flat</div><div class="elevation-desc">No shadow, cream bg</div></div>
+    <div class="elevation-card" style="border: 1px solid var(--border-light);"><div class="elevation-label">Level 1: Bordered</div><div class="elevation-desc">1px solid #eceae4</div></div>
+    <div class="elevation-card" style="border: 1px solid var(--charcoal-40);"><div class="elevation-label">Level 1b: Active</div><div class="elevation-desc">1px solid charcoal 40%</div></div>
+    <div class="elevation-card" style="background:var(--charcoal); color:var(--off-white); box-shadow: var(--shadow-inset);"><div class="elevation-label" style="color:var(--off-white);">Level 2: Inset</div><div class="elevation-desc" style="color:rgba(252,251,248,0.6);">Dark button shadow</div></div>
+    <div class="elevation-card" style="box-shadow: 0 0 0 2px rgba(59,130,246,0.5);"><div class="elevation-label">Level 3: Focus</div><div class="elevation-desc">Blue focus ring</div></div>
+  </div>
+</section>
+
+<footer class="footer">
+  Happy Reunion Design System — Adapted from <a href="https://github.com/VoltAgent/awesome-design-md/blob/main/design-md/lovable/DESIGN.md">Lovable DESIGN.md</a>
+</footer>
+
+</body>
+</html>

@@ -45,38 +45,187 @@ export type Database = {
         Row: {
           created_at: string
           ends_at: string | null
+          google_event_id: string | null
           guest_email: string
+          guest_id: string | null
           guest_name: string | null
           host_id: string
           id: string
           notes: string | null
+          riverside_url: string | null
           starts_at: string | null
           status: Database["public"]["Enums"]["booking_status"]
+          topic: string | null
           updated_at: string
         }
         Insert: {
           created_at?: string
           ends_at?: string | null
+          google_event_id?: string | null
           guest_email: string
+          guest_id?: string | null
           guest_name?: string | null
           host_id: string
           id?: string
           notes?: string | null
+          riverside_url?: string | null
           starts_at?: string | null
           status?: Database["public"]["Enums"]["booking_status"]
+          topic?: string | null
           updated_at?: string
         }
         Update: {
           created_at?: string
           ends_at?: string | null
+          google_event_id?: string | null
           guest_email?: string
+          guest_id?: string | null
           guest_name?: string | null
           host_id?: string
           id?: string
           notes?: string | null
+          riverside_url?: string | null
           starts_at?: string | null
           status?: Database["public"]["Enums"]["booking_status"]
+          topic?: string | null
           updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bookings_guest_id_fkey"
+            columns: ["guest_id"]
+            isOneToOne: false
+            referencedRelation: "guests"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      email_sends: {
+        Row: {
+          episode_id: string | null
+          gmail_message_id: string | null
+          host_id: string
+          id: string
+          recipient_email: string
+          sent_at: string
+          subject: string
+          template_id: string | null
+        }
+        Insert: {
+          episode_id?: string | null
+          gmail_message_id?: string | null
+          host_id: string
+          id?: string
+          recipient_email: string
+          sent_at?: string
+          subject: string
+          template_id?: string | null
+        }
+        Update: {
+          episode_id?: string | null
+          gmail_message_id?: string | null
+          host_id?: string
+          id?: string
+          recipient_email?: string
+          sent_at?: string
+          subject?: string
+          template_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "email_sends_episode_id_fkey"
+            columns: ["episode_id"]
+            isOneToOne: false
+            referencedRelation: "bookings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "email_sends_template_id_fkey"
+            columns: ["template_id"]
+            isOneToOne: false
+            referencedRelation: "email_templates"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      email_templates: {
+        Row: {
+          body: string
+          created_at: string
+          host_id: string
+          id: string
+          is_default: boolean
+          name: string
+          subject: string
+          updated_at: string
+        }
+        Insert: {
+          body: string
+          created_at?: string
+          host_id: string
+          id?: string
+          is_default?: boolean
+          name: string
+          subject: string
+          updated_at?: string
+        }
+        Update: {
+          body?: string
+          created_at?: string
+          host_id?: string
+          id?: string
+          is_default?: boolean
+          name?: string
+          subject?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      guests: {
+        Row: {
+          avatar_url: string | null
+          bio: string | null
+          company: string | null
+          created_at: string
+          email: string
+          host_id: string
+          id: string
+          linkedin: string | null
+          name: string
+          notes: string | null
+          twitter: string | null
+          updated_at: string
+          website: string | null
+        }
+        Insert: {
+          avatar_url?: string | null
+          bio?: string | null
+          company?: string | null
+          created_at?: string
+          email: string
+          host_id: string
+          id?: string
+          linkedin?: string | null
+          name: string
+          notes?: string | null
+          twitter?: string | null
+          updated_at?: string
+          website?: string | null
+        }
+        Update: {
+          avatar_url?: string | null
+          bio?: string | null
+          company?: string | null
+          created_at?: string
+          email?: string
+          host_id?: string
+          id?: string
+          linkedin?: string | null
+          name?: string
+          notes?: string | null
+          twitter?: string | null
+          updated_at?: string
+          website?: string | null
         }
         Relationships: []
       }
@@ -139,26 +288,41 @@ export type Database = {
       }
       profiles: {
         Row: {
+          avatar_url: string | null
           created_at: string
+          default_calendar_id: string | null
           display_name: string | null
           id: string
           role: Database["public"]["Enums"]["user_role"]
+          show_description: string | null
+          show_name: string | null
+          slug: string | null
           updated_at: string
           workspace_email: string | null
         }
         Insert: {
+          avatar_url?: string | null
           created_at?: string
+          default_calendar_id?: string | null
           display_name?: string | null
           id: string
           role?: Database["public"]["Enums"]["user_role"]
+          show_description?: string | null
+          show_name?: string | null
+          slug?: string | null
           updated_at?: string
           workspace_email?: string | null
         }
         Update: {
+          avatar_url?: string | null
           created_at?: string
+          default_calendar_id?: string | null
           display_name?: string | null
           id?: string
           role?: Database["public"]["Enums"]["user_role"]
+          show_description?: string | null
+          show_name?: string | null
+          slug?: string | null
           updated_at?: string
           workspace_email?: string | null
         }
@@ -176,6 +340,8 @@ export type Database = {
         | "draft"
         | "pending_guest"
         | "confirmed"
+        | "recorded"
+        | "published"
         | "cancelled"
         | "completed"
       user_role: "host" | "guest"
@@ -310,6 +476,8 @@ export const Constants = {
         "draft",
         "pending_guest",
         "confirmed",
+        "recorded",
+        "published",
         "cancelled",
         "completed",
       ],

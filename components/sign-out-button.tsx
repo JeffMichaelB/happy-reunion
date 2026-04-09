@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation"
 import { useState } from "react"
+import { SignOut } from "@phosphor-icons/react"
 
 import { Button } from "@/components/ui/button"
 import { createClient } from "@/lib/supabase/client"
@@ -19,8 +20,16 @@ export function SignOutButton() {
   }
 
   return (
-    <Button type="button" variant="outline" disabled={pending} onClick={() => void signOut()}>
-      {pending ? "Signing out…" : "Sign out"}
+    <Button
+      type="button"
+      variant="ghost"
+      size="sm"
+      disabled={pending}
+      onClick={() => void signOut()}
+      className="justify-start gap-2 text-muted-foreground"
+    >
+      <SignOut className="size-4" />
+      {pending ? "Signing out..." : "Sign out"}
     </Button>
   )
 }
