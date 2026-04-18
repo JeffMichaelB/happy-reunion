@@ -89,7 +89,7 @@ export default async function DashboardPage() {
     <div>
       <h1 className="text-4xl font-semibold tracking-tight">Dashboard</h1>
       <p className="mt-2 text-sm text-muted-foreground">
-        Overview of your podcast scheduling and guest management.
+        Overview of your Reunion scheduling and guest management.
       </p>
 
       <div className="mt-10 grid gap-6 lg:grid-cols-3">

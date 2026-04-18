@@ -9,7 +9,7 @@ import { createAdminClient } from "@/lib/supabase/admin"
 export async function GET(request: Request) {
   const url = new URL(request.url)
   const code = url.searchParams.get("code")
-  const next = url.searchParams.get("next") ?? "/"
+  const next = url.searchParams.get("next") ?? "/host/dashboard"
   const origin = url.origin
 
   const response = NextResponse.redirect(`${origin}${next}`)

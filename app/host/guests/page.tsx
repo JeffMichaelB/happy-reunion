@@ -79,7 +79,7 @@ export default async function GuestsPage() {
             {guestList.map((guest) => (
               <li key={guest.id}>
                 <Link href={`/host/guests/${guest.id}`} className="block h-full">
-                  <Card className="h-full rounded-xl border-border transition-shadow hover:shadow-md">
+                  <Card className="h-full transition-colors hover:border-[rgba(28,28,28,0.4)]">
                     <CardHeader className="pb-2">
                       <CardTitle className="text-base">{guest.name}</CardTitle>
                       <p className="font-mono text-[13px] text-muted-foreground">
@@ -96,9 +96,6 @@ export default async function GuestsPage() {
                           ? ""
                           : "s"}
                       </p>
-                      {guest.company ? (
-                        <p className="text-foreground">{guest.company}</p>
-                      ) : null}
                     </CardContent>
                   </Card>
                 </Link>

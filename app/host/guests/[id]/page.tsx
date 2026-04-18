@@ -152,40 +152,6 @@ export default async function GuestDetailPage({
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="company">Company</Label>
-                <Input
-                  id="company"
-                  name="company"
-                  defaultValue={guest.company ?? ""}
-                  autoComplete="organization"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="website">Website</Label>
-                <Input
-                  id="website"
-                  name="website"
-                  type="url"
-                  defaultValue={guest.website ?? ""}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="twitter">Twitter</Label>
-                <Input
-                  id="twitter"
-                  name="twitter"
-                  defaultValue={guest.twitter ?? ""}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="linkedin">LinkedIn</Label>
-                <Input
-                  id="linkedin"
-                  name="linkedin"
-                  defaultValue={guest.linkedin ?? ""}
-                />
-              </div>
-              <div className="space-y-2">
                 <Label htmlFor="notes">Notes</Label>
                 <Textarea
                   id="notes"

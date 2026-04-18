@@ -64,22 +64,6 @@ export default async function NewGuestPage() {
               <Textarea id="bio" name="bio" rows={4} />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="company">Company</Label>
-              <Input id="company" name="company" autoComplete="organization" />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="website">Website</Label>
-              <Input id="website" name="website" type="url" />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="twitter">Twitter</Label>
-              <Input id="twitter" name="twitter" />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="linkedin">LinkedIn</Label>
-              <Input id="linkedin" name="linkedin" />
-            </div>
-            <div className="space-y-2">
               <Label htmlFor="notes">Notes</Label>
               <Textarea id="notes" name="notes" rows={3} />
             </div>

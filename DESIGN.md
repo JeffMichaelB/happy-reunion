@@ -1,4 +1,4 @@
-# Happy Reunion — Design System
+# The Reunion Projects — Design System
 
 Light theme only. Adapted from the [Lovable design language](https://github.com/VoltAgent/awesome-design-md/blob/main/design-md/lovable/DESIGN.md) for a podcast scheduling and guest management platform.
 
@@ -6,7 +6,7 @@ Light theme only. Adapted from the [Lovable design language](https://github.com/
 
 ## 1. Visual Theme & Atmosphere
 
-Happy Reunion sits on a warm cream canvas (`#f7f4ed`) that feels approachable and human — like a well-organized notebook rather than a clinical SaaS dashboard. The near-black charcoal (`#1c1c1c`) text has organic warmth; it is never pure black. Together, the cream and charcoal create a comfortable contrast that hosts will sit in for long sessions without fatigue.
+The Reunion Projects sits on a warm cream canvas (`#f7f4ed`) that feels approachable and human — like a well-organized notebook rather than a clinical SaaS dashboard. The near-black charcoal (`#1c1c1c`) text has organic warmth; it is never pure black. Together, the cream and charcoal create a comfortable contrast that hosts will sit in for long sessions without fatigue.
 
 The Outfit typeface carries the brand personality — geometric bones with humanist roundness. At display sizes (28px+), semibold weight with tight tracking creates confident, editorial headlines. At body sizes (14–16px), regular weight provides clean readability. Geist Mono handles data and metadata (timestamps, IDs, email addresses) where a monospace voice clarifies that something is a literal value.
 
@@ -263,7 +263,7 @@ Base unit: 8px. Use Tailwind's scale which aligns (4=16px, 6=24px, 8=32px, etc.)
 | Inset (Level 2) | `rgba(255,255,255,0.2) 0px 0.5px 0px 0px inset, rgba(0,0,0,0.2) 0px 0px 0px 0.5px inset, rgba(0,0,0,0.05) 0px 1px 2px 0px` | Dark primary buttons only |
 | Focus (Level 3) | `0 0 0 2px rgba(59,130,246,0.5)` | Keyboard focus ring on all interactive elements |
 
-**Shadow Philosophy**: Happy Reunion uses zero traditional box-shadows for elevation. Structure is defined entirely through warm borders (`#eceae4`). The only shadow is the inset technique on dark buttons — a subtle highlight line at the top and a dark ring at the bottom, creating a "pressed into the surface" feel. This keeps everything grounded and tangible.
+**Shadow Philosophy**: The Reunion Projects uses zero traditional box-shadows for elevation. Structure is defined entirely through warm borders (`#eceae4`). The only shadow is the inset technique on dark buttons — a subtle highlight line at the top and a dark ring at the bottom, creating a "pressed into the surface" feel. This keeps everything grounded and tangible.
 
 ### Hover & Active States
 

@@ -29,10 +29,6 @@ export async function createGuest(formData: FormData) {
     name,
     email,
     bio: emptyToNull(formData.get("bio")),
-    company: emptyToNull(formData.get("company")),
-    website: emptyToNull(formData.get("website")),
-    twitter: emptyToNull(formData.get("twitter")),
-    linkedin: emptyToNull(formData.get("linkedin")),
     notes: emptyToNull(formData.get("notes")),
   })
 
@@ -66,10 +62,6 @@ export async function updateGuest(formData: FormData) {
       name,
       email,
       bio: emptyToNull(formData.get("bio")),
-      company: emptyToNull(formData.get("company")),
-      website: emptyToNull(formData.get("website")),
-      twitter: emptyToNull(formData.get("twitter")),
-      linkedin: emptyToNull(formData.get("linkedin")),
       notes: emptyToNull(formData.get("notes")),
     })
     .eq("id", id)

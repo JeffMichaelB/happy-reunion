@@ -51,6 +51,9 @@ export async function createEpisode(formData: FormData) {
   }
 
   const guest_name = parseOptionalString(formData.get("guest_name"))
+  if (!guest_name) {
+    redirect("/host/episodes?error=missing_guest_name")
+  }
   const guest_id = parseOptionalUuid(formData.get("guest_id"))
   const starts_at = parseOptionalIsoDatetime(formData.get("starts_at"))
   const ends_at = parseOptionalIsoDatetime(formData.get("ends_at"))

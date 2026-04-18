@@ -2,6 +2,7 @@ import { headers } from "next/headers"
 import { redirect } from "next/navigation"
 
 import { GoogleSignInButton } from "@/app/login/google-sign-in-button"
+import { SignOutButton } from "@/components/sign-out-button"
 import {
   Avatar,
   AvatarFallback,
@@ -113,7 +114,7 @@ export default async function HostSettingsPage() {
     slug && origin ? `${origin}/schedule/${encodeURIComponent(slug)}` : ""
 
   const selectClass =
-    "border-input bg-background flex h-9 w-full rounded-md border px-3 py-1 text-sm shadow-xs outline-none transition-[color,box-shadow] focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:cursor-not-allowed disabled:opacity-50"
+    "border-input bg-background flex h-9 w-full rounded-md border px-3 py-1 text-sm outline-none transition-[color,box-shadow] focus-visible:border-transparent focus-visible:ring-2 focus-visible:ring-[rgba(59,130,246,0.5)] disabled:cursor-not-allowed disabled:opacity-50"
 
   return (
     <div className="space-y-10">
@@ -128,7 +129,7 @@ export default async function HostSettingsPage() {
         <h2 className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
           Profile
         </h2>
-        <Card className="rounded-xl border border-border shadow-none ring-0">
+        <Card>
           <CardHeader>
             <CardTitle>Profile</CardTitle>
             <CardDescription>
@@ -188,7 +189,7 @@ export default async function HostSettingsPage() {
                   name="show_description"
                   defaultValue={profile.show_description ?? ""}
                   placeholder="A short description for your booking page"
-                  className="min-h-24 rounded-md"
+                  className="min-h-24"
                 />
               </div>
               <Button type="submit">Save profile</Button>
@@ -201,7 +202,7 @@ export default async function HostSettingsPage() {
         <h2 className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
           Scheduling link
         </h2>
-        <Card className="rounded-xl border border-border shadow-none ring-0">
+        <Card>
           <CardHeader>
             <CardTitle>Scheduling link</CardTitle>
             <CardDescription>
@@ -253,7 +254,7 @@ export default async function HostSettingsPage() {
         <h2 className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
           Google integration
         </h2>
-        <Card className="rounded-xl border border-border shadow-none ring-0">
+        <Card>
           <CardHeader>
             <CardTitle>Google Calendar</CardTitle>
             <CardDescription>
@@ -318,9 +319,29 @@ export default async function HostSettingsPage() {
 
       <section className="space-y-4">
         <h2 className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+          Session
+        </h2>
+        <Card>
+          <CardHeader>
+            <CardTitle>Signed in</CardTitle>
+            <CardDescription>
+              You are signed in to The Reunion Projects on this device.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="flex flex-wrap items-center justify-between gap-3">
+            <p className="font-mono text-[13px] text-foreground break-all">
+              {user.email}
+            </p>
+            <SignOutButton />
+          </CardContent>
+        </Card>
+      </section>
+
+      <section className="space-y-4">
+        <h2 className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
           Danger zone
         </h2>
-        <Card className="rounded-xl border border-border shadow-none ring-0 border-destructive/30">
+        <Card className="border-destructive/30">
           <CardHeader>
             <CardTitle>Disconnect &amp; account</CardTitle>
             <CardDescription>

@@ -10,9 +10,17 @@ import { cn } from "@/lib/utils"
 const fieldClass =
   "border-border bg-background text-foreground placeholder:text-muted-foreground focus-visible:ring-ring w-full rounded-md border px-3 py-2 text-sm outline-none focus-visible:ring-2"
 
-export function EmailPasswordForm() {
+const POST_AUTH_DESTINATION = "/host/dashboard"
+
+interface EmailPasswordFormProps {
+  defaultMode?: "signin" | "signup"
+}
+
+export function EmailPasswordForm({
+  defaultMode = "signin",
+}: EmailPasswordFormProps) {
   const router = useRouter()
-  const [mode, setMode] = useState<"signin" | "signup">("signin")
+  const [mode, setMode] = useState<"signin" | "signup">(defaultMode)
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [message, setMessage] = useState<string | null>(null)
@@ -37,7 +45,7 @@ export function EmailPasswordForm() {
       }
       if (data.session) {
         router.refresh()
-        router.push("/")
+        router.push(POST_AUTH_DESTINATION)
         return
       }
       setMessage(
@@ -54,7 +62,7 @@ export function EmailPasswordForm() {
       return
     }
     router.refresh()
-    router.push("/")
+    router.push(POST_AUTH_DESTINATION)
   }
 
   return (

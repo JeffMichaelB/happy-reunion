@@ -170,74 +170,43 @@ export default async function EpisodesPage() {
         </TabsList>
 
         <TabsContent value="list" className="mt-6">
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-base">All episodes</CardTitle>
-            </CardHeader>
-            <CardContent className="px-0 sm:px-6">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Date</TableHead>
-                    <TableHead>Guest</TableHead>
-                    <TableHead>Topic</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead>Riverside</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {episodes.length === 0 ? (
-                    <TableRow>
-                      <TableCell
-                        colSpan={5}
-                        className="text-center text-muted-foreground"
+          {episodes.length === 0 ? (
+            <p className="px-1 py-8 text-sm text-muted-foreground">
+              No episodes yet. Create one below.
+            </p>
+          ) : (
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Date</TableHead>
+                  <TableHead>Guest</TableHead>
+                  <TableHead>Status</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {episodes.map((row) => (
+                  <TableRow key={row.id}>
+                    <TableCell className="font-mono text-[13px] text-muted-foreground">
+                      {formatEpisodeDate(row.starts_at)}
+                    </TableCell>
+                    <TableCell>
+                      <Link
+                        href={`/host/episodes/${row.id}`}
+                        className="font-medium text-foreground underline-offset-4 hover:underline"
                       >
-                        No episodes yet. Create one below.
-                      </TableCell>
-                    </TableRow>
-                  ) : (
-                    episodes.map((row) => (
-                      <TableRow key={row.id}>
-                        <TableCell className="font-mono text-[13px]">
-                          {formatEpisodeDate(row.starts_at)}
-                        </TableCell>
-                        <TableCell>
-                          <Link
-                            href={`/host/episodes/${row.id}`}
-                            className="font-medium text-foreground underline-offset-4 hover:underline"
-                          >
-                            {displayGuestName(row)}
-                          </Link>
-                        </TableCell>
-                        <TableCell className="max-w-[240px] truncate">
-                          {row.topic ?? "—"}
-                        </TableCell>
-                        <TableCell>
-                          <span className={statusBadgeClass(row.status)}>
-                            {formatStatusLabel(row.status)}
-                          </span>
-                        </TableCell>
-                        <TableCell className="font-mono text-[13px]">
-                          {row.riverside_url ? (
-                            <a
-                              href={row.riverside_url}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="text-primary underline-offset-4 hover:underline"
-                            >
-                              Open
-                            </a>
-                          ) : (
-                            "—"
-                          )}
-                        </TableCell>
-                      </TableRow>
-                    ))
-                  )}
-                </TableBody>
-              </Table>
-            </CardContent>
-          </Card>
+                        {displayGuestName(row)}
+                      </Link>
+                    </TableCell>
+                    <TableCell>
+                      <span className={statusBadgeClass(row.status)}>
+                        {formatStatusLabel(row.status)}
+                      </span>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          )}
         </TabsContent>
 
         <TabsContent value="pipeline" className="mt-6 space-y-6">
@@ -247,7 +216,7 @@ export default async function EpisodesPage() {
                 <h2 className="text-sm font-semibold tracking-tight">
                   {PIPELINE_LABELS[status]}
                 </h2>
-                <div className="flex flex-1 flex-col gap-2 rounded-lg border border-border bg-[#fafaf9] p-2">
+                <div className="flex flex-1 flex-col gap-2 rounded-xl border border-border bg-background p-2">
                   {byPipelineColumn(status).length === 0 ? (
                     <p className="p-2 text-xs text-muted-foreground">
                       No episodes
@@ -257,7 +226,7 @@ export default async function EpisodesPage() {
                       <Link
                         key={row.id}
                         href={`/host/episodes/${row.id}`}
-                        className="block rounded-md border border-border bg-background p-3 shadow-sm transition-colors hover:bg-muted/40"
+                        className="block rounded-md border border-border bg-background p-3 transition-colors hover:border-[rgba(28,28,28,0.4)]"
                       >
                         <p className="font-mono text-[13px] text-muted-foreground">
                           {formatEpisodeDate(row.starts_at)}
@@ -288,7 +257,7 @@ export default async function EpisodesPage() {
                   <Link
                     key={row.id}
                     href={`/host/episodes/${row.id}`}
-                    className="inline-flex max-w-xs flex-col rounded-md border border-border bg-background p-3 text-left shadow-sm transition-colors hover:bg-muted/40"
+                    className="inline-flex max-w-xs flex-col rounded-md border border-border bg-background p-3 text-left transition-colors hover:border-[rgba(28,28,28,0.4)]"
                   >
                     <span className="font-mono text-[13px] text-muted-foreground">
                       {formatEpisodeDate(row.starts_at)}
@@ -325,15 +294,20 @@ export default async function EpisodesPage() {
               />
             </div>
             <div className="grid gap-2">
-              <Label htmlFor="guest_name">Guest name (optional)</Label>
-              <Input id="guest_name" name="guest_name" autoComplete="name" />
+              <Label htmlFor="guest_name">Guest name</Label>
+              <Input
+                id="guest_name"
+                name="guest_name"
+                required
+                autoComplete="name"
+              />
             </div>
             <div className="grid gap-2">
               <Label htmlFor="guest_id">Link to guest record (optional)</Label>
               <select
                 id="guest_id"
                 name="guest_id"
-                className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-xs outline-none transition-[color,box-shadow] focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:cursor-not-allowed disabled:opacity-50"
+                className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm outline-none transition-[color,box-shadow] focus-visible:border-transparent focus-visible:ring-2 focus-visible:ring-[rgba(59,130,246,0.5)] disabled:cursor-not-allowed disabled:opacity-50"
               >
                 <option value="">— None —</option>
                 {(guestList ?? []).map((g) => (

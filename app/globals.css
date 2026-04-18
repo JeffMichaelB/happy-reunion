@@ -13,14 +13,14 @@
     --primary-foreground: #fcfbf8;
     --secondary: #f0ede6;
     --secondary-foreground: #1c1c1c;
-    --muted: #eeebe5;
+    --muted: rgba(28, 28, 28, 0.04);
     --muted-foreground: #5f5f5d;
-    --accent: #eeebe5;
+    --accent: rgba(28, 28, 28, 0.04);
     --accent-foreground: #1c1c1c;
     --destructive: #ef4444;
     --border: #eceae4;
     --input: #eceae4;
-    --ring: #3b82f6;
+    --ring: rgba(59, 130, 246, 0.5);
     --chart-1: oklch(0.905 0.182 98.111);
     --chart-2: oklch(0.795 0.184 86.047);
     --chart-3: oklch(0.681 0.162 75.834);
@@ -34,7 +34,7 @@
     --sidebar-accent: #eeebe5;
     --sidebar-accent-foreground: #1c1c1c;
     --sidebar-border: #eceae4;
-    --sidebar-ring: #3b82f6;
+    --sidebar-ring: rgba(59, 130, 246, 0.5);
 }
 
 @theme inline {
@@ -91,4 +91,19 @@
   html {
     @apply font-sans;
     }
+}
+
+@keyframes marquee {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-\[marquee_var\(--marquee-duration\)_linear_infinite\] {
+    animation: none !important;
+  }
 }

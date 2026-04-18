@@ -20,7 +20,7 @@ export default function AuthConfirmPage() {
         return
       }
       if (session) {
-        router.replace("/")
+        router.replace("/host/dashboard")
         return
       }
       setError("No session found. Try signing in again.")
