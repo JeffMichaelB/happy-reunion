@@ -161,7 +161,7 @@ export default function HomePage() {
             <span className="hidden sm:inline">·</span>
             <span>Currently in private beta</span>
             <span className="hidden sm:inline">·</span>
-            <span>Est. 2026 — built in Brooklyn</span>
+            <span>Est 2026 — built with love</span>
           </div>
         </div>
       </section>
