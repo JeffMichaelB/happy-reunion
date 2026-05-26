@@ -38,7 +38,7 @@ export default async function DashboardPage() {
     await Promise.all([
       supabase
         .from("profiles")
-        .select("slug, show_name, display_name")
+        .select("slug, show_name, display_name, cal_com_booking_url")
         .eq("id", user.id)
         .single(),
       supabase
@@ -79,11 +79,7 @@ export default async function DashboardPage() {
     ["confirmed", "pending_guest", "draft"].includes(e.status),
   ).length
 
-  const origin =
-    process.env.NEXT_PUBLIC_SITE_URL ?? "https://happy-reunion.vercel.app"
-  const scheduleLink = profile?.slug
-    ? `${origin}/schedule/${profile.slug}`
-    : null
+  const calComUrl = profile?.cal_com_booking_url ?? null
 
   return (
     <div>
@@ -230,29 +226,29 @@ export default async function DashboardPage() {
 
           <section>
             <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
-              Scheduling Link
+              Booking Link
             </p>
-            {scheduleLink ? (
+            {calComUrl ? (
               <Card className="mt-3 rounded-xl">
                 <CardContent className="space-y-3 py-5">
                   <p className="break-all font-mono text-[13px]">
-                    {scheduleLink}
+                    {calComUrl}
                   </p>
-                  <CopyLinkButton link={scheduleLink} />
+                  <CopyLinkButton link={calComUrl} />
                 </CardContent>
               </Card>
             ) : (
               <Card className="mt-3 rounded-xl">
                 <CardContent className="py-5">
                   <p className="text-sm text-muted-foreground">
-                    Set a scheduling slug in{" "}
+                    Set your Cal.com booking URL in{" "}
                     <Link
                       href="/host/settings"
                       className="underline underline-offset-4"
                     >
                       Settings
                     </Link>{" "}
-                    to enable your public link.
+                    to enable your booking link.
                   </p>
                 </CardContent>
               </Card>

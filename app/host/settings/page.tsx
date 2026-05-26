@@ -1,7 +1,8 @@
 import { headers } from "next/headers"
+import Link from "next/link"
 import { redirect } from "next/navigation"
 
-import { GoogleSignInButton } from "@/app/login/google-sign-in-button"
+import { getEventTypes } from "@/lib/calcom/api"
 import { SignOutButton } from "@/components/sign-out-button"
 import {
   Avatar,
@@ -20,14 +21,13 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Separator } from "@/components/ui/separator"
 import { Textarea } from "@/components/ui/textarea"
-import { getCalendarClient } from "@/lib/google/client"
 import { createAdminClient } from "@/lib/supabase/admin"
 import { createClient } from "@/lib/supabase/server"
 
 import {
   deleteAccount,
-  disconnectGoogle,
-  updateDefaultCalendar,
+  disconnectCalCom,
+  selectEventType,
   updateProfile,
   uploadAvatar,
 } from "./actions"
@@ -41,17 +41,13 @@ function initialsFromName(name: string | null | undefined) {
   return (a + b).toUpperCase() || "?"
 }
 
-async function resolveSiteOrigin() {
-  const env = process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, "")
-  if (env) return env
+export default async function HostSettingsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ calcom?: string }>
+}) {
+  const q = await searchParams
 
-  const h = await headers()
-  const host = h.get("x-forwarded-host") ?? h.get("host")
-  const proto = h.get("x-forwarded-proto") ?? "https"
-  return host ? `${proto}://${host}` : ""
-}
-
-export default async function HostSettingsPage() {
   const supabase = await createClient()
   const {
     data: { user },
@@ -61,7 +57,7 @@ export default async function HostSettingsPage() {
   const { data: profile, error: profileError } = await supabase
     .from("profiles")
     .select(
-      "display_name, show_name, show_description, slug, avatar_url, default_calendar_id",
+      "display_name, show_name, show_description, slug, avatar_url, cal_com_booking_url",
     )
     .eq("id", user.id)
     .single()
@@ -71,28 +67,20 @@ export default async function HostSettingsPage() {
   }
 
   const admin = createAdminClient()
-  const { data: googleRow } = await admin
-    .from("host_google_credentials")
-    .select("user_id")
+  const { data: calComCreds } = await admin
+    .from("host_calcom_credentials")
+    .select("user_id, calcom_username, selected_event_type_id, selected_event_type_slug")
     .eq("user_id", user.id)
     .maybeSingle()
 
-  const googleConnected = !!googleRow
+  const calComConnected = !!calComCreds
 
-  let calendars: { id: string | null | undefined; summary: string | null | undefined; primary: boolean | null | undefined }[] =
-    []
-
-  if (googleConnected) {
+  let eventTypes: { id: number; slug: string; title: string; length: number }[] = []
+  if (calComConnected) {
     try {
-      const calendar = await getCalendarClient(user.id)
-      const res = await calendar.calendarList.list({ minAccessRole: "owner" })
-      calendars = (res.data.items ?? []).map((c) => ({
-        id: c.id,
-        summary: c.summary,
-        primary: c.primary ?? false,
-      }))
+      eventTypes = await getEventTypes(user.id)
     } catch {
-      calendars = []
+      eventTypes = []
     }
   }
 
@@ -108,11 +96,6 @@ export default async function HostSettingsPage() {
     }
   }
 
-  const origin = await resolveSiteOrigin()
-  const slug = profile.slug?.trim() ?? ""
-  const scheduleUrl =
-    slug && origin ? `${origin}/schedule/${encodeURIComponent(slug)}` : ""
-
   const selectClass =
     "border-input bg-background flex h-9 w-full rounded-md border px-3 py-1 text-sm outline-none transition-[color,box-shadow] focus-visible:border-transparent focus-visible:ring-2 focus-visible:ring-[rgba(59,130,246,0.5)] disabled:cursor-not-allowed disabled:opacity-50"
 
@@ -121,9 +104,20 @@ export default async function HostSettingsPage() {
       <div>
         <h1 className="text-4xl font-semibold tracking-tight">Settings</h1>
         <p className="mt-2 max-w-xl text-sm text-muted-foreground leading-relaxed">
-          Profile, your public scheduling link, and Google Calendar.
+          Profile, scheduling integration, and account.
         </p>
       </div>
+
+      {q.calcom === "connected" ? (
+        <p className="rounded-md border border-[#86efac] bg-[#dcfce7]/40 px-3 py-2 text-sm text-[#166534]">
+          Cal.com connected successfully. Select an event type below to finish setup.
+        </p>
+      ) : null}
+      {q.calcom === "error" ? (
+        <p className="rounded-md border border-[#fca5a5] bg-[#fee2e2]/40 px-3 py-2 text-sm text-[#991b1b]">
+          Failed to connect Cal.com. Please try again.
+        </p>
+      ) : null}
 
       <section className="space-y-4">
         <h2 className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
@@ -188,29 +182,10 @@ export default async function HostSettingsPage() {
                   id="show_description"
                   name="show_description"
                   defaultValue={profile.show_description ?? ""}
-                  placeholder="A short description for your booking page"
+                  placeholder="A short description of your show"
                   className="min-h-24"
                 />
               </div>
-              <Button type="submit">Save profile</Button>
-            </form>
-          </CardContent>
-        </Card>
-      </section>
-
-      <section className="space-y-4">
-        <h2 className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
-          Scheduling link
-        </h2>
-        <Card>
-          <CardHeader>
-            <CardTitle>Scheduling link</CardTitle>
-            <CardDescription>
-              Share this URL so guests can book time on your calendar.
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-6">
-            <form action={updateProfile} className="space-y-3">
               <div className="space-y-2">
                 <Label htmlFor="slug">Custom slug</Label>
                 <Input
@@ -220,45 +195,26 @@ export default async function HostSettingsPage() {
                   placeholder="your-show"
                 />
                 <p className="text-xs text-muted-foreground">
-                  Lowercase letters, numbers, and hyphens only. This becomes your
-                  public URL.
+                  Lowercase letters, numbers, and hyphens only.
                 </p>
               </div>
-              <Button type="submit" variant="secondary" size="sm">
-                Save slug
-              </Button>
+              <Button type="submit">Save profile</Button>
             </form>
-
-            <Separator />
-
-            <div className="flex flex-col gap-2 sm:flex-row sm:items-end">
-              <div className="min-w-0 flex-1 space-y-2">
-                <Label htmlFor="schedule-url">Public URL</Label>
-                <Input
-                  id="schedule-url"
-                  readOnly
-                  value={
-                    scheduleUrl ||
-                    "Set a slug above to generate your scheduling link"
-                  }
-                  className="font-mono text-xs"
-                />
-              </div>
-              <CopyScheduleLinkButton url={scheduleUrl} />
-            </div>
           </CardContent>
         </Card>
       </section>
 
       <section className="space-y-4">
         <h2 className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
-          Google integration
+          Cal.com scheduling
         </h2>
         <Card>
           <CardHeader>
-            <CardTitle>Google Calendar</CardTitle>
+            <CardTitle>Cal.com</CardTitle>
             <CardDescription>
-              Connect Google to sync recordings and pick a default calendar.
+              Connect your Cal.com account to manage scheduling directly from
+              your dashboard. Guests book via your Cal.com link; bookings sync
+              back here automatically.
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
@@ -266,52 +222,76 @@ export default async function HostSettingsPage() {
               <span className="text-sm">
                 Status:{" "}
                 <span className="font-medium text-foreground">
-                  {googleConnected ? "Connected" : "Not connected"}
+                  {calComConnected
+                    ? `Connected${calComCreds.calcom_username ? ` as ${calComCreds.calcom_username}` : ""}`
+                    : "Not connected"}
                 </span>
               </span>
-              {!googleConnected ? <GoogleSignInButton /> : null}
+              {!calComConnected ? (
+                <Link
+                  href="/api/calcom/connect"
+                  className="inline-flex items-center justify-center rounded-md bg-foreground px-4 py-2 text-sm font-medium text-background transition-colors hover:bg-foreground/90"
+                >
+                  Connect Cal.com
+                </Link>
+              ) : null}
             </div>
 
-            {googleConnected ? (
-              <form action={updateDefaultCalendar} className="space-y-3">
-                <Label htmlFor="default_calendar_id">Default calendar</Label>
-                <select
-                  id="default_calendar_id"
-                  name="default_calendar_id"
-                  defaultValue={profile.default_calendar_id ?? ""}
-                  className={selectClass}
-                >
-                  <option value="">Primary (default)</option>
-                  {calendars.map((c) => {
-                    const id = c.id ?? ""
-                    if (!id) return null
-                    const label =
-                      (c.summary ?? id) + (c.primary ? " (primary)" : "")
-                    return (
-                      <option key={id} value={id}>
-                        {label}
+            {calComConnected ? (
+              <>
+                <Separator />
+                <form action={selectEventType} className="space-y-3">
+                  <Label htmlFor="event_type_id">Event type for guest bookings</Label>
+                  <select
+                    id="event_type_id"
+                    name="event_type_id"
+                    defaultValue={calComCreds.selected_event_type_id ?? ""}
+                    className={selectClass}
+                  >
+                    <option value="">Select an event type...</option>
+                    {eventTypes.map((et) => (
+                      <option key={et.id} value={et.id}>
+                        {et.title} ({et.length} min)
                       </option>
-                    )
-                  })}
-                </select>
-                {calendars.length === 0 ? (
-                  <p className="text-xs text-muted-foreground">
-                    Calendars could not be loaded. Try reconnecting Google.
-                  </p>
-                ) : null}
-                <Button type="submit" variant="secondary" size="sm">
-                  Save calendar
-                </Button>
-              </form>
-            ) : null}
+                    ))}
+                  </select>
+                  {eventTypes.length === 0 ? (
+                    <p className="text-xs text-muted-foreground">
+                      No event types found. Create one in Cal.com first.
+                    </p>
+                  ) : (
+                    <p className="text-xs text-muted-foreground">
+                      Selecting an event type auto-registers a webhook so
+                      bookings sync to your episode pipeline.
+                    </p>
+                  )}
+                  <Button type="submit" variant="secondary" size="sm">
+                    Save event type
+                  </Button>
+                </form>
 
-            {googleConnected ? (
-              <div className="flex flex-wrap items-center gap-2">
-                <GoogleSignInButton />
-                <span className="text-xs text-muted-foreground">
-                  Reconnect to refresh permissions or tokens.
-                </span>
-              </div>
+                {profile.cal_com_booking_url ? (
+                  <>
+                    <Separator />
+                    <div className="space-y-2">
+                      <Label>Booking link</Label>
+                      <div className="flex flex-col gap-2 sm:flex-row sm:items-end">
+                        <div className="min-w-0 flex-1">
+                          <Input
+                            readOnly
+                            value={profile.cal_com_booking_url}
+                            className="font-mono text-xs"
+                          />
+                        </div>
+                        <CopyScheduleLinkButton url={profile.cal_com_booking_url} />
+                      </div>
+                      <p className="text-xs text-muted-foreground">
+                        Share this link with guests so they can book time with you.
+                      </p>
+                    </div>
+                  </>
+                ) : null}
+              </>
             ) : null}
           </CardContent>
         </Card>
@@ -345,20 +325,20 @@ export default async function HostSettingsPage() {
           <CardHeader>
             <CardTitle>Disconnect &amp; account</CardTitle>
             <CardDescription>
-              Removing Google stops calendar sync. Deleting your account is
+              Disconnecting Cal.com stops booking sync. Deleting your account is
               permanent.
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
-            {googleConnected ? (
-              <form action={disconnectGoogle}>
+            {calComConnected ? (
+              <form action={disconnectCalCom}>
                 <Button type="submit" variant="destructive">
-                  Disconnect Google
+                  Disconnect Cal.com
                 </Button>
               </form>
             ) : (
               <p className="text-sm text-muted-foreground">
-                Google is not connected.
+                Cal.com is not connected.
               </p>
             )}
 

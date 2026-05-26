@@ -42,24 +42,23 @@ const GROUND_RULES = [
 export default function GroundRulesPage() {
   return (
     <article>
-      <header className="border-b border-border px-6 pt-24 pb-16 md:pt-32 md:pb-20">
-        <div className="mx-auto max-w-5xl">
+      <header className="relative px-6 pb-12 pt-12 lg:pb-20 lg:pt-20">
+        <div className="mx-auto max-w-7xl">
           <FadeUp>
             <p className="font-mono text-[11px] font-medium uppercase tracking-[0.18em] text-muted-foreground">
+              <span className="mr-3 inline-block h-1 w-6 -translate-y-1 bg-foreground/40 align-middle" />
               Ground Rules
             </p>
           </FadeUp>
           <FadeUp delay={0.08}>
-            <h1 className="mt-8 font-heading text-[clamp(2.75rem,7vw,5.75rem)] font-bold leading-[0.98] tracking-[-0.02em] text-foreground">
+            <h1 className="mt-8 font-heading text-[clamp(3rem,7.4vw,6.5rem)] font-bold leading-[0.98] tracking-[-0.02em] text-foreground">
               The contract,
               <br />
-              <span className="font-normal italic text-foreground/70">
-                in five lines.
-              </span>
+              <span className="font-heading italic font-normal">in five lines.</span>
             </h1>
           </FadeUp>
           <FadeUp delay={0.16}>
-            <p className="mt-10 max-w-2xl text-lg leading-relaxed text-muted-foreground md:text-xl">
+            <p className="mt-8 max-w-xl text-lg leading-relaxed text-muted-foreground md:text-xl">
               Reunions are a space for honest, respectful conversation. These
               are the principles every host agrees to before the first
               invitation goes out.
@@ -68,7 +67,7 @@ export default function GroundRulesPage() {
         </div>
       </header>
 
-      <div className="px-6 py-20 md:py-28">
+      <div className="border-t border-border px-6 py-20 md:py-28">
         <Stagger
           as="ol"
           className="mx-auto max-w-5xl divide-y divide-border border-y border-border"

@@ -32,12 +32,9 @@ vercel --prod --yes --scope jeffreys-projects-1207f4a2
 
 **Already set in Vercel (Production, Preview, Development):** `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY` (points at Supabase project `happy-reunion-east` — see `supabase/README.md`).
 
-**You still need to add** (required for Google OAuth callback + encrypted token storage + `/api/google/verify`):
+**You still need to add:**
 
 - `SUPABASE_SERVICE_ROLE_KEY` — Production, Preview, (optional) Development; mark sensitive.
-- `OAUTH_TOKEN_ENCRYPTION_KEY` — same environments; long random secret (matches local).
-- `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` — same as Supabase Auth Google provider.
+- `CALCOM_WEBHOOK_SECRET` — same environments; the HMAC secret you configured in Cal.com webhooks.
 
-Optional: `NEXT_PUBLIC_SITE_URL` = your canonical site URL (e.g. production `https://…vercel.app` or custom domain) for stable OAuth `redirectTo`.
-
-Then in **Supabase** and **Google Cloud**, add redirect URL: `https://<your-production-host>/auth/callback` (and preview URLs if you use preview OAuth).
+Optional: `NEXT_PUBLIC_SITE_URL` = your canonical site URL (e.g. production `https://…vercel.app` or custom domain) for stable auth `redirectTo`.

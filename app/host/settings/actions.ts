@@ -1,8 +1,10 @@
 "use server"
 
+import { headers } from "next/headers"
 import { revalidatePath } from "next/cache"
 import { redirect } from "next/navigation"
 
+import { createWebhook, deleteWebhook, getEventTypes } from "@/lib/calcom/api"
 import { createAdminClient } from "@/lib/supabase/admin"
 import { createClient } from "@/lib/supabase/server"
 
@@ -57,21 +59,21 @@ export async function updateProfile(formData: FormData) {
   revalidatePath("/host/settings")
 }
 
-export async function updateDefaultCalendar(formData: FormData) {
+export async function updateCalComUrl(formData: FormData) {
   const supabase = await createClient()
   const {
     data: { user },
   } = await supabase.auth.getUser()
   if (!user) redirect("/login")
 
-  const raw = formData.get("default_calendar_id")
-  const id =
+  const raw = formData.get("cal_com_booking_url")
+  const url =
     typeof raw === "string" && raw.trim().length > 0 ? raw.trim() : null
 
   const { error } = await supabase
     .from("profiles")
     .update({
-      default_calendar_id: id,
+      cal_com_booking_url: url,
       updated_at: new Date().toISOString(),
     })
     .eq("id", user.id)
@@ -81,6 +83,7 @@ export async function updateDefaultCalendar(formData: FormData) {
   }
 
   revalidatePath("/host/settings")
+  revalidatePath("/host/dashboard")
 }
 
 const AVATAR_MAX_BYTES = 5 * 1024 * 1024
@@ -132,27 +135,6 @@ export async function uploadAvatar(formData: FormData) {
   revalidatePath("/host/settings")
 }
 
-export async function disconnectGoogle(formData: FormData) {
-  void formData
-  const supabase = await createClient()
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
-  if (!user) redirect("/login")
-
-  const admin = createAdminClient()
-  const { error } = await admin
-    .from("host_google_credentials")
-    .delete()
-    .eq("user_id", user.id)
-
-  if (error) {
-    throw new Error(error.message)
-  }
-
-  revalidatePath("/host/settings")
-}
-
 export async function deleteAccount(formData: FormData) {
   const supabase = await createClient()
   const {
@@ -176,4 +158,133 @@ export async function deleteAccount(formData: FormData) {
   await supabase.auth.signOut()
 
   redirect("/login")
+}
+
+export async function disconnectCalCom() {
+  const supabase = await createClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+  if (!user) redirect("/login")
+
+  const admin = createAdminClient()
+
+  const { data: creds } = await admin
+    .from("host_calcom_credentials")
+    .select("selected_event_type_id, webhook_id")
+    .eq("user_id", user.id)
+    .maybeSingle()
+
+  if (creds?.webhook_id && creds.selected_event_type_id) {
+    try {
+      await deleteWebhook(user.id, creds.selected_event_type_id, creds.webhook_id)
+    } catch {
+      // best effort
+    }
+  }
+
+  await admin
+    .from("host_calcom_credentials")
+    .delete()
+    .eq("user_id", user.id)
+
+  await supabase
+    .from("profiles")
+    .update({ cal_com_booking_url: null, updated_at: new Date().toISOString() })
+    .eq("id", user.id)
+
+  revalidatePath("/host/settings")
+  revalidatePath("/host/dashboard")
+}
+
+async function resolveSiteOrigin(): Promise<string> {
+  const env = process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, "")
+  if (env) return env
+  const h = await headers()
+  const host = h.get("x-forwarded-host") ?? h.get("host")
+  const proto = h.get("x-forwarded-proto") ?? "https"
+  return host ? `${proto}://${host}` : ""
+}
+
+export async function selectEventType(formData: FormData) {
+  const supabase = await createClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+  if (!user) redirect("/login")
+
+  const eventTypeIdRaw = formData.get("event_type_id")
+  const eventTypeId = Number(eventTypeIdRaw)
+  if (!Number.isFinite(eventTypeId) || eventTypeId <= 0) {
+    throw new Error("Select a valid event type")
+  }
+
+  const eventTypes = await getEventTypes(user.id)
+  const selected = eventTypes.find((et) => et.id === eventTypeId)
+  if (!selected) {
+    throw new Error("Event type not found in your Cal.com account")
+  }
+
+  const admin = createAdminClient()
+
+  const { data: creds } = await admin
+    .from("host_calcom_credentials")
+    .select("webhook_id, selected_event_type_id, calcom_username")
+    .eq("user_id", user.id)
+    .single()
+
+  if (!creds) throw new Error("Cal.com not connected")
+
+  if (creds.webhook_id && creds.selected_event_type_id) {
+    try {
+      await deleteWebhook(user.id, creds.selected_event_type_id, creds.webhook_id)
+    } catch {
+      // best effort cleanup
+    }
+  }
+
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("slug")
+    .eq("id", user.id)
+    .single()
+
+  const slug = profile?.slug ?? user.id
+  const origin = await resolveSiteOrigin()
+  const webhookSecret = process.env.CALCOM_WEBHOOK_SECRET ?? ""
+  const subscriberUrl = `${origin}/api/webhooks/calcom?slug=${encodeURIComponent(slug)}`
+
+  const webhookId = await createWebhook(
+    user.id,
+    eventTypeId,
+    subscriberUrl,
+    webhookSecret,
+  )
+
+  await admin
+    .from("host_calcom_credentials")
+    .update({
+      selected_event_type_id: eventTypeId,
+      selected_event_type_slug: selected.slug,
+      webhook_id: webhookId,
+      updated_at: new Date().toISOString(),
+    })
+    .eq("user_id", user.id)
+
+  const bookingUrl = creds.calcom_username
+    ? `https://cal.com/${creds.calcom_username}/${selected.slug}`
+    : null
+
+  if (bookingUrl) {
+    await supabase
+      .from("profiles")
+      .update({
+        cal_com_booking_url: bookingUrl,
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", user.id)
+  }
+
+  revalidatePath("/host/settings")
+  revalidatePath("/host/dashboard")
 }

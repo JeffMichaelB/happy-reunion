@@ -2,7 +2,6 @@ import type { Metadata } from "next"
 import Link from "next/link"
 
 import { EmailPasswordForm } from "./email-password-form"
-import { GoogleSignInButton } from "./google-sign-in-button"
 
 interface LoginPageProps {
   searchParams: Promise<{ mode?: string }>
@@ -43,23 +42,12 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
         </h1>
         <p className="text-muted-foreground mt-1 text-sm">
           {isSignup
-            ? "Hosting takes a few minutes to set up. Use email and password, or continue with Google."
-            : "Use email and password for quick testing, or Google for Calendar/Gmail automation."}
+            ? "Hosting takes a few minutes to set up."
+            : "Sign in with your email and password."}
         </p>
       </div>
 
       <EmailPasswordForm defaultMode={isSignup ? "signup" : "signin"} />
-
-      <div className="relative">
-        <div className="absolute inset-0 flex items-center" aria-hidden>
-          <span className="border-border w-full border-t" />
-        </div>
-        <div className="relative flex justify-center text-xs">
-          <span className="bg-background text-muted-foreground px-2">or</span>
-        </div>
-      </div>
-
-      <GoogleSignInButton />
 
       <p className="text-muted-foreground text-center text-xs">
         {isSignup ? (

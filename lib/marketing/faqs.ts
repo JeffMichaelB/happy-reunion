@@ -17,7 +17,7 @@ export const FAQS: readonly Faq[] = [
     category: "Hosting",
     question: "Why would I want to become a host?",
     answer:
-      "Hosting a Reunion is a meaningful way to reconnect with people who have shaped your life — and to create a record of those conversations worth keeping. As a host, you'll have access to:\n\n–  Reconnection with friends, acquaintances, and people from formative chapters of your life — high school, college, professional experiences, military service, and more.\n–  A full suite of tools to invite, schedule, record, store, and share your Reunions.\n–  Resources and templates to guide a rewarding, memorable conversation for both you and your guests.",
+      "Hosting a Reunion is a meaningful way to reconnect with people who have shaped your life — and to create a record of those conversations worth keeping. As a host, you'll have access to:\n\n–  Reconnection with friends, acquaintances, and people from formative chapters of your life — high school, college, professional experiences, military service, and more.\n–  A full suite of tools to invite, schedule, record, store, and share your Reunions.\n–  Conversation resources to guide a rewarding, memorable Reunion for both you and your guests.",
   },
   {
     category: "Hosting",

@@ -16,30 +16,25 @@ export const metadata: Metadata = buildMetadata({
 export default function ManifestoPage() {
   return (
     <article>
-      <header className="border-b border-border px-6 pt-24 pb-16 md:pt-32 md:pb-20">
-        <div className="mx-auto max-w-5xl">
+      <header className="relative px-6 pb-12 pt-12 lg:pb-20 lg:pt-20">
+        <div className="mx-auto max-w-7xl">
           <FadeUp>
-            <div className="flex flex-col gap-2 font-mono text-[11px] uppercase tracking-[0.18em] text-muted-foreground sm:flex-row sm:items-center sm:gap-4">
-              <span>Manifesto</span>
-              <span className="hidden sm:inline">·</span>
-              <span>Vol. 01</span>
-              <span className="hidden sm:inline">·</span>
-              <span>A Reunion Projects essay</span>
-            </div>
+            <p className="font-mono text-[11px] font-medium uppercase tracking-[0.18em] text-muted-foreground">
+              <span className="mr-3 inline-block h-1 w-6 -translate-y-1 bg-foreground/40 align-middle" />
+              Manifesto · Vol. 01
+            </p>
           </FadeUp>
 
           <FadeUp delay={0.08}>
-            <h1 className="mt-10 font-heading text-[clamp(2.75rem,7vw,5.75rem)] font-bold leading-[0.98] tracking-[-0.02em] text-foreground">
+            <h1 className="mt-8 font-heading text-[clamp(3rem,7.4vw,6.5rem)] font-bold leading-[0.98] tracking-[-0.02em] text-foreground">
               Stop scrolling.
               <br />
-              <span className="font-normal italic text-foreground/70">
-                Start talking.
-              </span>
+              <span className="font-heading italic font-normal">Start talking.</span>
             </h1>
           </FadeUp>
 
           <FadeUp delay={0.16}>
-            <p className="mt-10 max-w-2xl text-lg leading-relaxed text-muted-foreground md:text-xl">
+            <p className="mt-8 max-w-xl text-lg leading-relaxed text-muted-foreground md:text-xl">
               An invitation back to real conversation &mdash; with the people
               who shaped the chapter you&rsquo;re in.
             </p>
@@ -47,7 +42,7 @@ export default function ManifestoPage() {
         </div>
       </header>
 
-      <div className="px-6 py-20 md:py-32">
+      <div className="border-t border-border px-6 py-20 md:py-32">
         <div className="mx-auto grid max-w-6xl grid-cols-1 gap-12 md:grid-cols-12 md:gap-16">
           <aside className="md:col-span-3">
             <FadeUp>
@@ -166,6 +161,53 @@ export default function ManifestoPage() {
           </div>
         </div>
       </div>
+
+      <section
+        aria-label="From the founders"
+        className="border-t border-border px-6 pt-16 pb-28 md:pt-20 md:pb-40"
+      >
+        <FadeUp className="mx-auto max-w-5xl">
+          <Quotes
+            className="size-10 text-foreground/30 md:size-12"
+            weight="fill"
+          />
+          <div className="mt-8 space-y-10 font-heading text-[clamp(1.5rem,3.2vw,2.75rem)] font-normal leading-[1.2] tracking-[-0.01em] text-foreground md:space-y-12">
+            <p>
+              We built this because we were craving deeper conversations.
+            </p>
+            <p>
+              How rarely are we given space to actually talk about our lives
+              &mdash; our experiences, failures, successes, and the stories
+              that shaped us?
+            </p>
+            <p>
+              Most conversations today stay surface-level, not because we
+              don&rsquo;t care, but because we&rsquo;re busy and there&rsquo;s
+              never &ldquo;time.&rdquo; In our day to day, when do we really
+              get to reflect out loud and be heard?
+            </p>
+            <p>
+              We believe people genuinely enjoy talking to other people and
+              learning what they&rsquo;ve lived through. Everyone has
+              interesting stories that never get shared, and we wanted to
+              create a place where those stories matter.
+            </p>
+            <p>
+              Why should only podcasters get that outlet? By revisiting past
+              experiences and celebrating the good old days, we tap into a kind
+              of connection that modern adulthood rarely offers &mdash; one that
+              brings laughter, fulfillment, and a renewed sense of closeness
+              with people we may have lost touch with along the way.
+            </p>
+          </div>
+          <div className="mt-10 flex items-center gap-4">
+            <span className="block h-px w-12 bg-foreground/30" />
+            <span className="font-mono text-xs uppercase tracking-[0.18em] text-muted-foreground">
+              From the founders
+            </span>
+          </div>
+        </FadeUp>
+      </section>
 
       <div className="px-6 pb-24 md:pb-32">
         <CtaStrip />

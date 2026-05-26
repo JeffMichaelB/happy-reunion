@@ -93,9 +93,9 @@ export default function HomePage() {
     <>
       <section
         aria-labelledby="hero-heading"
-        className="relative flex min-h-[calc(100dvh-4rem)] flex-col"
+        className="relative lg:flex lg:min-h-[calc(100dvh-4rem)] lg:flex-col"
       >
-        <div className="mx-auto grid w-full max-w-7xl flex-1 grid-cols-1 items-center gap-16 px-6 pb-20 pt-12 lg:grid-cols-12 lg:gap-12 lg:pt-20">
+        <div className="mx-auto grid w-full max-w-7xl grid-cols-1 items-start gap-16 px-6 pb-12 pt-12 lg:flex-1 lg:grid-cols-12 lg:items-center lg:gap-12 lg:pb-20 lg:pt-20">
           <div className="lg:col-span-7">
             <FadeUp>
               <p className="font-mono text-[11px] font-medium uppercase tracking-[0.18em] text-muted-foreground">
@@ -154,21 +154,11 @@ export default function HomePage() {
             <ReunionCardsStack />
           </div>
         </div>
-
-        <div className="border-t border-border">
-          <div className="mx-auto flex max-w-7xl flex-col gap-3 px-6 py-5 font-mono text-[11px] uppercase tracking-[0.14em] text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
-            <span>A Reunion Projects platform</span>
-            <span className="hidden sm:inline">·</span>
-            <span>Currently in private beta</span>
-            <span className="hidden sm:inline">·</span>
-            <span>Est 2026 — built with love</span>
-          </div>
-        </div>
       </section>
 
       <section
         aria-label="Premise"
-        className="border-t border-border px-6 py-28 md:py-40"
+        className="border-t border-border px-6 pt-16 pb-28 md:pt-20 md:pb-40"
       >
         <FadeUp className="mx-auto max-w-5xl">
           <Quotes
@@ -176,10 +166,8 @@ export default function HomePage() {
             weight="fill"
           />
           <p className="mt-8 font-heading text-[clamp(2rem,4.4vw,3.75rem)] font-normal leading-[1.1] tracking-[-0.01em] text-foreground">
-            Everyone has a chapter they rarely get to talk about. A pivot, a
-            reinvention, a quiet decision that changed{" "}
-            <span className="italic font-normal">everything</span>. Reunions are
-            for those.
+            Do you want to talk about the weather? Or do you want to talk about
+            how you&rsquo;re really doing and who you really are?
           </p>
           <div className="mt-10 flex items-center gap-4">
             <span className="block h-px w-12 bg-foreground/30" />
@@ -205,7 +193,7 @@ export default function HomePage() {
                   id="how-heading"
                   className="mt-6 font-heading text-4xl font-bold leading-[1.05] tracking-tight text-foreground md:text-5xl"
                 >
-                  Three steps. A whole afternoon&rsquo;s worth of meaning.
+                  Three simple steps
                 </h2>
                 <p className="mt-6 max-w-md text-base leading-relaxed text-muted-foreground">
                   We handle invitations, scheduling, recording, transcripts,

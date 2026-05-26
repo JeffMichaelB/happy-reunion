@@ -1,9 +1,9 @@
 "use server"
 
 import { revalidatePath } from "next/cache"
-import { cookies, headers } from "next/headers"
 import { redirect } from "next/navigation"
 
+import { cancelBooking, rescheduleBooking } from "@/lib/calcom/api"
 import type { Enums } from "@/lib/database.types"
 import { createClient } from "@/lib/supabase/server"
 
@@ -202,39 +202,91 @@ export async function updateEpisodeStatus(formData: FormData) {
   redirect(`/host/episodes/${id}`)
 }
 
-export async function syncEpisodeCalendar(formData: FormData) {
-  const id = (formData.get("episodeId") as string)?.trim()
-  const hasGoogleEvent = formData.get("hasGoogleEvent") === "true"
+export async function cancelEpisodeViaCal(formData: FormData) {
+  const supabase = await createClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+  if (!user) redirect("/login")
+
+  const id = (formData.get("id") as string)?.trim()
   if (!id) redirect("/host/episodes")
 
-  const headerList = await headers()
-  const protocol = headerList.get("x-forwarded-proto") ?? "http"
-  const host = headerList.get("host") ?? "localhost:3000"
-  const cookieStore = await cookies()
-  const cookieHeader = cookieStore
-    .getAll()
-    .map((c) => `${c.name}=${c.value}`)
-    .join("; ")
+  const { data: booking } = await supabase
+    .from("bookings")
+    .select("cal_com_booking_uid")
+    .eq("id", id)
+    .eq("host_id", user.id)
+    .single()
 
-  const action = hasGoogleEvent ? "update" : "create"
-
-  try {
-    const res = await fetch(`${protocol}://${host}/api/google/calendar/sync`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Cookie: cookieHeader,
-      },
-      body: JSON.stringify({ episodeId: id, action }),
-    })
-    if (!res.ok) {
-      redirect(`/host/episodes/${id}?calendar=error`)
-    }
-  } catch {
-    redirect(`/host/episodes/${id}?calendar=error`)
+  if (!booking?.cal_com_booking_uid) {
+    redirect(`/host/episodes/${id}?error=no_calcom_uid`)
   }
+
+  const reason = (formData.get("reason") as string)?.trim() || "Cancelled by host"
+
+  const ok = await cancelBooking(user.id, booking.cal_com_booking_uid, reason)
+  if (!ok) {
+    redirect(`/host/episodes/${id}?error=cancel_failed`)
+  }
+
+  await supabase
+    .from("bookings")
+    .update({ status: "cancelled" })
+    .eq("id", id)
+    .eq("host_id", user.id)
 
   revalidatePath("/host/episodes")
   revalidatePath(`/host/episodes/${id}`)
-  redirect(`/host/episodes/${id}?calendar=ok`)
+  redirect(`/host/episodes/${id}`)
+}
+
+export async function rescheduleEpisodeViaCal(formData: FormData) {
+  const supabase = await createClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+  if (!user) redirect("/login")
+
+  const id = (formData.get("id") as string)?.trim()
+  if (!id) redirect("/host/episodes")
+
+  const newStart = (formData.get("new_start") as string)?.trim()
+  if (!newStart) {
+    redirect(`/host/episodes/${id}?error=missing_datetime`)
+  }
+
+  const { data: booking } = await supabase
+    .from("bookings")
+    .select("cal_com_booking_uid")
+    .eq("id", id)
+    .eq("host_id", user.id)
+    .single()
+
+  if (!booking?.cal_com_booking_uid) {
+    redirect(`/host/episodes/${id}?error=no_calcom_uid`)
+  }
+
+  const reason = (formData.get("reason") as string)?.trim() || "Rescheduled by host"
+  const startIso = new Date(newStart).toISOString()
+
+  const ok = await rescheduleBooking(
+    user.id,
+    booking.cal_com_booking_uid,
+    startIso,
+    reason,
+  )
+  if (!ok) {
+    redirect(`/host/episodes/${id}?error=reschedule_failed`)
+  }
+
+  await supabase
+    .from("bookings")
+    .update({ starts_at: startIso })
+    .eq("id", id)
+    .eq("host_id", user.id)
+
+  revalidatePath("/host/episodes")
+  revalidatePath(`/host/episodes/${id}`)
+  redirect(`/host/episodes/${id}`)
 }

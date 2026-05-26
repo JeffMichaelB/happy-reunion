@@ -14,38 +14,11 @@ export type Database = {
   }
   public: {
     Tables: {
-      availability_windows: {
-        Row: {
-          created_at: string
-          day_of_week: number
-          end_time: string
-          host_id: string
-          id: string
-          start_time: string
-        }
-        Insert: {
-          created_at?: string
-          day_of_week: number
-          end_time: string
-          host_id: string
-          id?: string
-          start_time: string
-        }
-        Update: {
-          created_at?: string
-          day_of_week?: number
-          end_time?: string
-          host_id?: string
-          id?: string
-          start_time?: string
-        }
-        Relationships: []
-      }
       bookings: {
         Row: {
+          cal_com_booking_uid: string | null
           created_at: string
           ends_at: string | null
-          google_event_id: string | null
           guest_email: string
           guest_id: string | null
           guest_name: string | null
@@ -59,9 +32,9 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          cal_com_booking_uid?: string | null
           created_at?: string
           ends_at?: string | null
-          google_event_id?: string | null
           guest_email: string
           guest_id?: string | null
           guest_name?: string | null
@@ -75,9 +48,9 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          cal_com_booking_uid?: string | null
           created_at?: string
           ends_at?: string | null
-          google_event_id?: string | null
           guest_email?: string
           guest_id?: string | null
           guest_name?: string | null
@@ -109,7 +82,6 @@ export type Database = {
           recipient_email: string
           sent_at: string
           subject: string
-          template_id: string | null
         }
         Insert: {
           episode_id?: string | null
@@ -119,7 +91,6 @@ export type Database = {
           recipient_email: string
           sent_at?: string
           subject: string
-          template_id?: string | null
         }
         Update: {
           episode_id?: string | null
@@ -129,7 +100,6 @@ export type Database = {
           recipient_email?: string
           sent_at?: string
           subject?: string
-          template_id?: string | null
         }
         Relationships: [
           {
@@ -139,47 +109,7 @@ export type Database = {
             referencedRelation: "bookings"
             referencedColumns: ["id"]
           },
-          {
-            foreignKeyName: "email_sends_template_id_fkey"
-            columns: ["template_id"]
-            isOneToOne: false
-            referencedRelation: "email_templates"
-            referencedColumns: ["id"]
-          },
         ]
-      }
-      email_templates: {
-        Row: {
-          body: string
-          created_at: string
-          host_id: string
-          id: string
-          is_default: boolean
-          name: string
-          subject: string
-          updated_at: string
-        }
-        Insert: {
-          body: string
-          created_at?: string
-          host_id: string
-          id?: string
-          is_default?: boolean
-          name: string
-          subject: string
-          updated_at?: string
-        }
-        Update: {
-          body?: string
-          created_at?: string
-          host_id?: string
-          id?: string
-          is_default?: boolean
-          name?: string
-          subject?: string
-          updated_at?: string
-        }
-        Relationships: []
       }
       guests: {
         Row: {
@@ -229,68 +159,11 @@ export type Database = {
         }
         Relationships: []
       }
-      host_google_credentials: {
-        Row: {
-          access_token_encrypted: string | null
-          expires_at: string | null
-          refresh_token_encrypted: string
-          scopes: string | null
-          updated_at: string
-          user_id: string
-        }
-        Insert: {
-          access_token_encrypted?: string | null
-          expires_at?: string | null
-          refresh_token_encrypted: string
-          scopes?: string | null
-          updated_at?: string
-          user_id: string
-        }
-        Update: {
-          access_token_encrypted?: string | null
-          expires_at?: string | null
-          refresh_token_encrypted?: string
-          scopes?: string | null
-          updated_at?: string
-          user_id?: string
-        }
-        Relationships: []
-      }
-      host_scheduling_defaults: {
-        Row: {
-          buffer_after_minutes: number
-          buffer_before_minutes: number
-          host_id: string
-          min_notice_hours: number
-          slot_duration_minutes: number
-          timezone: string
-          updated_at: string
-        }
-        Insert: {
-          buffer_after_minutes?: number
-          buffer_before_minutes?: number
-          host_id: string
-          min_notice_hours?: number
-          slot_duration_minutes?: number
-          timezone?: string
-          updated_at?: string
-        }
-        Update: {
-          buffer_after_minutes?: number
-          buffer_before_minutes?: number
-          host_id?: string
-          min_notice_hours?: number
-          slot_duration_minutes?: number
-          timezone?: string
-          updated_at?: string
-        }
-        Relationships: []
-      }
       profiles: {
         Row: {
           avatar_url: string | null
+          cal_com_booking_url: string | null
           created_at: string
-          default_calendar_id: string | null
           display_name: string | null
           id: string
           role: Database["public"]["Enums"]["user_role"]
@@ -302,8 +175,8 @@ export type Database = {
         }
         Insert: {
           avatar_url?: string | null
+          cal_com_booking_url?: string | null
           created_at?: string
-          default_calendar_id?: string | null
           display_name?: string | null
           id: string
           role?: Database["public"]["Enums"]["user_role"]
@@ -315,8 +188,8 @@ export type Database = {
         }
         Update: {
           avatar_url?: string | null
+          cal_com_booking_url?: string | null
           created_at?: string
-          default_calendar_id?: string | null
           display_name?: string | null
           id?: string
           role?: Database["public"]["Enums"]["user_role"]
@@ -325,6 +198,42 @@ export type Database = {
           slug?: string | null
           updated_at?: string
           workspace_email?: string | null
+        }
+        Relationships: []
+      }
+      host_calcom_credentials: {
+        Row: {
+          user_id: string
+          access_token_encrypted: string
+          refresh_token_encrypted: string
+          expires_at: string | null
+          calcom_username: string | null
+          selected_event_type_id: number | null
+          selected_event_type_slug: string | null
+          webhook_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          user_id: string
+          access_token_encrypted: string
+          refresh_token_encrypted: string
+          expires_at?: string | null
+          calcom_username?: string | null
+          selected_event_type_id?: number | null
+          selected_event_type_slug?: string | null
+          webhook_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          user_id?: string
+          access_token_encrypted?: string
+          refresh_token_encrypted?: string
+          expires_at?: string | null
+          calcom_username?: string | null
+          selected_event_type_id?: number | null
+          selected_event_type_slug?: string | null
+          webhook_id?: string | null
+          updated_at?: string
         }
         Relationships: []
       }

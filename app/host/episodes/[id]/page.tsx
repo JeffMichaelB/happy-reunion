@@ -2,8 +2,9 @@ import Link from "next/link"
 import { notFound, redirect } from "next/navigation"
 
 import {
+  cancelEpisodeViaCal,
   deleteEpisode,
-  syncEpisodeCalendar,
+  rescheduleEpisodeViaCal,
   updateEpisode,
   updateEpisodeStatus,
 } from "@/app/host/episodes/actions"
@@ -40,7 +41,7 @@ type EpisodeDetail = {
   notes: string | null
   status: BookingStatus
   riverside_url: string | null
-  google_event_id: string | null
+  cal_com_booking_uid: string | null
   created_at: string
   updated_at: string
   guests: { id: string; name: string; email: string } | null
@@ -121,7 +122,7 @@ function gmailComposeUrl(to: string, subject: string, body: string): string {
 
 interface Props {
   params: Promise<{ id: string }>
-  searchParams: Promise<{ error?: string; calendar?: string }>
+  searchParams: Promise<{ error?: string }>
 }
 
 export default async function EpisodeDetailPage({ params, searchParams }: Props) {
@@ -137,7 +138,7 @@ export default async function EpisodeDetailPage({ params, searchParams }: Props)
   const { data: raw } = await supabase
     .from("bookings")
     .select(
-      "id, host_id, guest_id, guest_email, guest_name, starts_at, ends_at, topic, notes, status, riverside_url, google_event_id, created_at, updated_at, guests ( id, name, email )",
+      "id, host_id, guest_id, guest_email, guest_name, starts_at, ends_at, topic, notes, status, riverside_url, cal_com_booking_uid, created_at, updated_at, guests ( id, name, email )",
     )
     .eq("id", id)
     .eq("host_id", user.id)
@@ -149,16 +150,10 @@ export default async function EpisodeDetailPage({ params, searchParams }: Props)
 
   const { data: emailRows } = await supabase
     .from("email_sends")
-    .select("id, recipient_email, subject, sent_at, gmail_message_id")
+    .select("id, recipient_email, subject, sent_at")
     .eq("host_id", user.id)
     .eq("episode_id", id)
     .order("sent_at", { ascending: false })
-
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("slug")
-    .eq("id", user.id)
-    .single()
 
   const guestDisplayName = episode.guests?.name ?? episode.guest_name ?? "Guest"
   const guestEmail = episode.guests?.email ?? episode.guest_email
@@ -170,11 +165,6 @@ export default async function EpisodeDetailPage({ params, searchParams }: Props)
     "",
     episode.notes ?? "",
   ].join("\n")
-
-  const rescheduleHref =
-    profile?.slug != null && profile.slug.length > 0
-      ? `/schedule/${profile.slug}`
-      : null
 
   return (
     <div className="space-y-8">
@@ -203,16 +193,6 @@ export default async function EpisodeDetailPage({ params, searchParams }: Props)
           Something went wrong ({q.error}). Try again.
         </p>
       ) : null}
-      {q.calendar === "ok" ? (
-        <p className="rounded-md border border-[#86efac] bg-[#dcfce7]/40 px-3 py-2 text-sm text-[#166534]">
-          Calendar sync completed.
-        </p>
-      ) : null}
-      {q.calendar === "error" ? (
-        <p className="rounded-md border border-[#fca5a5] bg-[#fee2e2]/40 px-3 py-2 text-sm text-[#991b1b]">
-          Calendar sync failed. Check Google connection and try again.
-        </p>
-      ) : null}
 
       <div className="flex flex-wrap gap-2">
         <a
@@ -223,26 +203,49 @@ export default async function EpisodeDetailPage({ params, searchParams }: Props)
         >
           Send email
         </a>
-        {rescheduleHref ? (
-          <Link
-            href={rescheduleHref}
-            className={cn(buttonVariants({ variant: "outline" }))}
-          >
-            Reschedule
-          </Link>
+        {episode.cal_com_booking_uid && episode.status !== "cancelled" ? (
+          <>
+            <form action={cancelEpisodeViaCal}>
+              <input type="hidden" name="id" value={episode.id} />
+              <Button type="submit" variant="destructive">
+                Cancel via Cal.com
+              </Button>
+            </form>
+          </>
         ) : (
-          <Button variant="outline" disabled title="Set a public slug in settings to enable scheduling links">
-            Reschedule
-          </Button>
+          <form action={updateEpisodeStatus}>
+            <input type="hidden" name="id" value={episode.id} />
+            <input type="hidden" name="status" value="cancelled" />
+            <Button type="submit" variant="destructive">
+              Cancel episode
+            </Button>
+          </form>
         )}
-        <form action={updateEpisodeStatus}>
-          <input type="hidden" name="id" value={episode.id} />
-          <input type="hidden" name="status" value="cancelled" />
-          <Button type="submit" variant="destructive">
-            Cancel episode
-          </Button>
-        </form>
       </div>
+
+      {episode.cal_com_booking_uid && episode.status !== "cancelled" ? (
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base">Reschedule</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <form action={rescheduleEpisodeViaCal} className="flex max-w-md flex-col gap-3 sm:flex-row sm:items-end">
+              <input type="hidden" name="id" value={episode.id} />
+              <div className="grid flex-1 gap-2">
+                <Label htmlFor="new_start">New date &amp; time</Label>
+                <Input
+                  id="new_start"
+                  name="new_start"
+                  type="datetime-local"
+                />
+              </div>
+              <Button type="submit" variant="secondary">
+                Reschedule via Cal.com
+              </Button>
+            </form>
+          </CardContent>
+        </Card>
+      ) : null}
 
       <Separator />
 
@@ -329,30 +332,6 @@ export default async function EpisodeDetailPage({ params, searchParams }: Props)
       </Card>
 
       <Card>
-        <CardHeader className="flex flex-row flex-wrap items-center justify-between gap-2">
-          <CardTitle className="text-base">Google Calendar</CardTitle>
-          <form action={syncEpisodeCalendar}>
-            <input type="hidden" name="episodeId" value={episode.id} />
-            <input
-              type="hidden"
-              name="hasGoogleEvent"
-              value={episode.google_event_id ? "true" : "false"}
-            />
-            <Button type="submit" variant="secondary">
-              {episode.google_event_id ? "Sync to calendar" : "Add to calendar"}
-            </Button>
-          </form>
-        </CardHeader>
-        <CardContent>
-          <p className="font-mono text-[13px] text-muted-foreground">
-            {episode.google_event_id
-              ? `Event ID: ${episode.google_event_id}`
-              : "Not linked to a calendar event yet."}
-          </p>
-        </CardContent>
-      </Card>
-
-      <Card>
         <CardHeader>
           <CardTitle className="text-base">Email history</CardTitle>
         </CardHeader>
@@ -398,7 +377,7 @@ export default async function EpisodeDetailPage({ params, searchParams }: Props)
       <form action={deleteEpisode} className="flex items-center justify-between gap-4 rounded-lg border border-border p-4">
         <input type="hidden" name="id" value={episode.id} />
         <p className="text-sm text-muted-foreground">
-          Permanently delete this episode and related calendar link metadata.
+          Permanently delete this episode.
         </p>
         <Button type="submit" variant="destructive">
           Delete episode
