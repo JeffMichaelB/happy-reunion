@@ -2,6 +2,7 @@ import { createHmac, timingSafeEqual } from "node:crypto"
 
 import { NextResponse } from "next/server"
 
+import { findOrCreateGuestId } from "@/lib/guests/link"
 import { createAdminClient } from "@/lib/supabase/admin"
 
 function verifySignature(payload: string, signature: string): boolean {
@@ -74,8 +75,15 @@ export async function POST(request: Request) {
 
   switch (triggerEvent) {
     case "BOOKING_CREATED": {
+      const guestId = await findOrCreateGuestId(
+        admin,
+        hostId,
+        guest?.email,
+        guest?.name,
+      )
       await admin.from("bookings").insert({
         host_id: hostId,
+        guest_id: guestId,
         guest_email: guest?.email ?? "unknown@guest.com",
         guest_name: guest?.name ?? "Guest",
         starts_at: startsAt,

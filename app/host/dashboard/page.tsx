@@ -2,15 +2,11 @@ import Link from "next/link"
 import { redirect } from "next/navigation"
 
 import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card"
+import { Card, CardContent } from "@/components/ui/card"
+import { getEnvBookingUrl } from "@/lib/calcom/api"
 import { createClient } from "@/lib/supabase/server"
 
+import { BookingLinkBanner } from "./booking-link-banner"
 import { CopyLinkButton } from "./copy-link-button"
 
 const STATUS_CLASSES: Record<string, string> = {
@@ -79,7 +75,9 @@ export default async function DashboardPage() {
     ["confirmed", "pending_guest", "draft"].includes(e.status),
   ).length
 
-  const calComUrl = profile?.cal_com_booking_url ?? null
+  const calComUrl =
+    profile?.cal_com_booking_url ?? getEnvBookingUrl() ?? null
+  const hostName = profile?.display_name ?? profile?.show_name ?? null
 
   return (
     <div>
@@ -88,7 +86,11 @@ export default async function DashboardPage() {
         Overview of your Reunion scheduling and guest management.
       </p>
 
-      <div className="mt-10 grid gap-6 lg:grid-cols-3">
+      <div className="mt-8">
+        <BookingLinkBanner url={calComUrl} hostName={hostName} />
+      </div>
+
+      <div className="mt-8 grid gap-6 lg:grid-cols-3">
         {/* Upcoming Episodes */}
         <div className="lg:col-span-2 space-y-6">
           <section>
@@ -234,7 +236,17 @@ export default async function DashboardPage() {
                   <p className="break-all font-mono text-[13px]">
                     {calComUrl}
                   </p>
-                  <CopyLinkButton link={calComUrl} />
+                  <div className="flex flex-wrap gap-2">
+                    <CopyLinkButton link={calComUrl} />
+                    <a
+                      href={calComUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex h-8 items-center gap-1 rounded-md border border-[rgba(28,28,28,0.4)] bg-transparent px-3 text-sm font-medium transition-colors hover:bg-[rgba(28,28,28,0.04)]"
+                    >
+                      Open in Cal.com
+                    </a>
+                  </div>
                 </CardContent>
               </Card>
             ) : (

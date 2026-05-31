@@ -1,8 +1,6 @@
-import { headers } from "next/headers"
-import Link from "next/link"
 import { redirect } from "next/navigation"
 
-import { getEventTypes } from "@/lib/calcom/api"
+import { getEnvBookingUrl, getEventTypes, isEnvKeyConfigured } from "@/lib/calcom/api"
 import { SignOutButton } from "@/components/sign-out-button"
 import {
   Avatar,
@@ -27,6 +25,8 @@ import { createClient } from "@/lib/supabase/server"
 import {
   deleteAccount,
   disconnectCalCom,
+  removeCalComApiKey,
+  saveCalComApiKey,
   selectEventType,
   updateProfile,
   uploadAvatar,
@@ -69,13 +69,25 @@ export default async function HostSettingsPage({
   const admin = createAdminClient()
   const { data: calComCreds } = await admin
     .from("host_calcom_credentials")
-    .select("user_id, calcom_username, selected_event_type_id, selected_event_type_slug")
+    .select(
+      "user_id, calcom_username, selected_event_type_id, selected_event_type_slug, api_key_encrypted, access_token_encrypted",
+    )
     .eq("user_id", user.id)
     .maybeSingle()
 
-  const calComConnected = !!calComCreds
+  const hasApiKey = !!calComCreds?.api_key_encrypted
+  const hasOAuth = !!calComCreds?.access_token_encrypted
+  const envKeyConfigured = isEnvKeyConfigured()
+  const calComConnected = hasApiKey || hasOAuth || envKeyConfigured
+  const connectionLabel = envKeyConfigured
+    ? "Connected (server)"
+    : hasApiKey
+      ? "Connected via API key"
+      : hasOAuth
+        ? "Connected via OAuth"
+        : "Not connected"
 
-  let eventTypes: { id: number; slug: string; title: string; length: number }[] = []
+  let eventTypes: Awaited<ReturnType<typeof getEventTypes>> = []
   if (calComConnected) {
     try {
       eventTypes = await getEventTypes(user.id)
@@ -83,6 +95,9 @@ export default async function HostSettingsPage({
       eventTypes = []
     }
   }
+
+  const effectiveBookingUrl =
+    profile.cal_com_booking_url ?? getEnvBookingUrl() ?? null
 
   let avatarSignedUrl: string | null = null
   if (profile.avatar_url) {
@@ -222,20 +237,96 @@ export default async function HostSettingsPage({
               <span className="text-sm">
                 Status:{" "}
                 <span className="font-medium text-foreground">
-                  {calComConnected
-                    ? `Connected${calComCreds.calcom_username ? ` as ${calComCreds.calcom_username}` : ""}`
-                    : "Not connected"}
+                  {connectionLabel}
+                  {calComConnected && calComCreds?.calcom_username
+                    ? ` (${calComCreds.calcom_username})`
+                    : ""}
                 </span>
               </span>
-              {!calComConnected ? (
-                <Link
-                  href="/api/calcom/connect"
-                  className="inline-flex items-center justify-center rounded-md bg-foreground px-4 py-2 text-sm font-medium text-background transition-colors hover:bg-foreground/90"
-                >
-                  Connect Cal.com
-                </Link>
-              ) : null}
             </div>
+
+            {envKeyConfigured ? (
+              <>
+                <Separator />
+                <div className="space-y-2">
+                  <p className="text-sm text-muted-foreground">
+                    Cal.com is configured server-side via{" "}
+                    <span className="font-mono">CALCOM_API_KEY</span>. Every
+                    signed-in host shares this connection. To use per-host
+                    credentials later, remove that env var.
+                  </p>
+                </div>
+              </>
+            ) : (
+              <>
+                <Separator />
+                <div className="space-y-3">
+                  <Label htmlFor="api_key">Cal.com API key</Label>
+                  {hasApiKey ? (
+                    <div className="space-y-2">
+                      <p className="text-sm text-muted-foreground">
+                        API key on file. Paste a new one to replace it, or
+                        remove it below.
+                      </p>
+                      <form
+                        action={saveCalComApiKey}
+                        className="flex flex-col gap-2 sm:flex-row sm:items-end"
+                      >
+                        <div className="min-w-0 flex-1">
+                          <Input
+                            id="api_key"
+                            name="api_key"
+                            type="password"
+                            placeholder="cal_live_…"
+                            autoComplete="off"
+                            spellCheck={false}
+                            className="font-mono text-xs"
+                          />
+                        </div>
+                        <Button type="submit" variant="secondary">
+                          Replace key
+                        </Button>
+                      </form>
+                      <form action={removeCalComApiKey}>
+                        <Button type="submit" variant="outline" size="sm">
+                          Remove API key
+                        </Button>
+                      </form>
+                    </div>
+                  ) : (
+                    <form
+                      action={saveCalComApiKey}
+                      className="flex flex-col gap-2 sm:flex-row sm:items-end"
+                    >
+                      <div className="min-w-0 flex-1 space-y-1">
+                        <Input
+                          id="api_key"
+                          name="api_key"
+                          type="password"
+                          placeholder="cal_live_…"
+                          autoComplete="off"
+                          spellCheck={false}
+                          className="font-mono text-xs"
+                        />
+                        <p className="text-xs text-muted-foreground">
+                          Create one at{" "}
+                          <a
+                            href="https://app.cal.com/settings/developer/api-keys"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="underline underline-offset-4"
+                          >
+                            Cal.com → Developer → API keys
+                          </a>
+                          . Stored encrypted at rest.
+                        </p>
+                      </div>
+                      <Button type="submit">Save API key</Button>
+                    </form>
+                  )}
+                </div>
+              </>
+            )}
 
             {calComConnected ? (
               <>
@@ -245,7 +336,7 @@ export default async function HostSettingsPage({
                   <select
                     id="event_type_id"
                     name="event_type_id"
-                    defaultValue={calComCreds.selected_event_type_id ?? ""}
+                    defaultValue={calComCreds?.selected_event_type_id ?? ""}
                     className={selectClass}
                   >
                     <option value="">Select an event type...</option>
@@ -261,8 +352,8 @@ export default async function HostSettingsPage({
                     </p>
                   ) : (
                     <p className="text-xs text-muted-foreground">
-                      Selecting an event type auto-registers a webhook so
-                      bookings sync to your episode pipeline.
+                      Selecting an event type registers a webhook so bookings
+                      sync to your episode pipeline.
                     </p>
                   )}
                   <Button type="submit" variant="secondary" size="sm">
@@ -270,7 +361,7 @@ export default async function HostSettingsPage({
                   </Button>
                 </form>
 
-                {profile.cal_com_booking_url ? (
+                {effectiveBookingUrl ? (
                   <>
                     <Separator />
                     <div className="space-y-2">
@@ -279,14 +370,18 @@ export default async function HostSettingsPage({
                         <div className="min-w-0 flex-1">
                           <Input
                             readOnly
-                            value={profile.cal_com_booking_url}
+                            value={effectiveBookingUrl}
                             className="font-mono text-xs"
                           />
                         </div>
-                        <CopyScheduleLinkButton url={profile.cal_com_booking_url} />
+                        <CopyScheduleLinkButton url={effectiveBookingUrl} />
                       </div>
                       <p className="text-xs text-muted-foreground">
-                        Share this link with guests so they can book time with you.
+                        Share this link with guests so they can book time with
+                        you.
+                        {!profile.cal_com_booking_url ? (
+                          <> Source: <span className="font-mono">CALCOM_BOOKING_URL</span></>
+                        ) : null}
                       </p>
                     </div>
                   </>

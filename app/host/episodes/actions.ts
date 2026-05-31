@@ -4,6 +4,8 @@ import { revalidatePath } from "next/cache"
 import { redirect } from "next/navigation"
 
 import { cancelBooking, rescheduleBooking } from "@/lib/calcom/api"
+import { EmailNotConfiguredError, sendEmail } from "@/lib/email/resend"
+import { findOrCreateGuestId } from "@/lib/guests/link"
 import type { Enums } from "@/lib/database.types"
 import { createClient } from "@/lib/supabase/server"
 
@@ -54,7 +56,10 @@ export async function createEpisode(formData: FormData) {
   if (!guest_name) {
     redirect("/host/episodes?error=missing_guest_name")
   }
-  const guest_id = parseOptionalUuid(formData.get("guest_id"))
+  const providedGuestId = parseOptionalUuid(formData.get("guest_id"))
+  const guest_id =
+    providedGuestId ??
+    (await findOrCreateGuestId(supabase, user.id, guest_email, guest_name))
   const starts_at = parseOptionalIsoDatetime(formData.get("starts_at"))
   const ends_at = parseOptionalIsoDatetime(formData.get("ends_at"))
   const topic = parseOptionalString(formData.get("topic"))
@@ -200,6 +205,75 @@ export async function updateEpisodeStatus(formData: FormData) {
   revalidatePath("/host/episodes")
   revalidatePath(`/host/episodes/${id}`)
   redirect(`/host/episodes/${id}`)
+}
+
+export async function sendEpisodeEmail(formData: FormData) {
+  const supabase = await createClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+  if (!user) redirect("/login")
+
+  const id = (formData.get("id") as string)?.trim()
+  if (!id) redirect("/host/episodes")
+
+  const { data: booking } = await supabase
+    .from("bookings")
+    .select("id, guest_email")
+    .eq("id", id)
+    .eq("host_id", user.id)
+    .single()
+
+  if (!booking) {
+    redirect("/host/episodes")
+  }
+
+  const to = parseOptionalString(formData.get("to")) ?? booking.guest_email
+  const subject = parseOptionalString(formData.get("subject"))
+  const body = parseOptionalString(formData.get("body"))
+
+  if (!to) {
+    redirect(`/host/episodes/${id}?error=missing_recipient`)
+  }
+  if (!subject) {
+    redirect(`/host/episodes/${id}?error=missing_subject`)
+  }
+  if (!body) {
+    redirect(`/host/episodes/${id}?error=missing_body`)
+  }
+
+  let messageId: string | null = null
+  try {
+    const result = await sendEmail({
+      to,
+      subject,
+      body,
+      idempotencyScope: id,
+    })
+    messageId = result.messageId
+  } catch (err) {
+    if (err instanceof EmailNotConfiguredError) {
+      redirect(`/host/episodes/${id}?error=email_not_configured`)
+    }
+    redirect(`/host/episodes/${id}?error=email_failed`)
+  }
+
+  const { error: logError } = await supabase.from("email_sends").insert({
+    host_id: user.id,
+    episode_id: id,
+    recipient_email: to,
+    subject,
+    gmail_message_id: messageId,
+  })
+
+  if (logError) {
+    redirect(`/host/episodes/${id}?error=email_log_failed`)
+  }
+
+  revalidatePath("/host/episodes")
+  revalidatePath(`/host/episodes/${id}`)
+  revalidatePath("/host/dashboard")
+  redirect(`/host/episodes/${id}?sent=1`)
 }
 
 export async function cancelEpisodeViaCal(formData: FormData) {

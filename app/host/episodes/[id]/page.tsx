@@ -8,7 +8,7 @@ import {
   updateEpisode,
   updateEpisodeStatus,
 } from "@/app/host/episodes/actions"
-import { Button, buttonVariants } from "@/components/ui/button"
+import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -21,11 +21,13 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
+import { isEmailConfigured } from "@/lib/email/resend"
 import type { Enums } from "@/lib/database.types"
 import { createClient } from "@/lib/supabase/server"
 import { cn } from "@/lib/utils"
 
 import { EpisodeStatusForm } from "./episode-status-form"
+import { SendEmailForm } from "./send-email-form"
 
 type BookingStatus = Enums<"booking_status">
 
@@ -120,9 +122,20 @@ function gmailComposeUrl(to: string, subject: string, body: string): string {
   return `https://mail.google.com/mail/?${p.toString()}`
 }
 
+const ERROR_MESSAGES: Record<string, string> = {
+  email_not_configured:
+    "Email isn't configured. Add RESEND_API_KEY to send from here, or use Gmail.",
+  email_failed: "The email could not be sent. Please try again.",
+  email_log_failed:
+    "The email was sent but could not be logged. Check your history.",
+  missing_recipient: "Add a recipient email address.",
+  missing_subject: "Add a subject line.",
+  missing_body: "Write a message before sending.",
+}
+
 interface Props {
   params: Promise<{ id: string }>
-  searchParams: Promise<{ error?: string }>
+  searchParams: Promise<{ error?: string; sent?: string }>
 }
 
 export default async function EpisodeDetailPage({ params, searchParams }: Props) {
@@ -165,6 +178,7 @@ export default async function EpisodeDetailPage({ params, searchParams }: Props)
     "",
     episode.notes ?? "",
   ].join("\n")
+  const emailConfigured = isEmailConfigured()
 
   return (
     <div className="space-y-8">
@@ -190,19 +204,17 @@ export default async function EpisodeDetailPage({ params, searchParams }: Props)
 
       {q.error ? (
         <p className="rounded-md border border-destructive/30 bg-destructive/5 px-3 py-2 text-sm text-destructive">
-          Something went wrong ({q.error}). Try again.
+          {ERROR_MESSAGES[q.error] ?? `Something went wrong (${q.error}). Try again.`}
+        </p>
+      ) : null}
+
+      {q.sent ? (
+        <p className="rounded-md border border-[#86efac] bg-[#dcfce7]/40 px-3 py-2 text-sm text-[#166534]">
+          Email sent and logged to this episode.
         </p>
       ) : null}
 
       <div className="flex flex-wrap gap-2">
-        <a
-          href={gmailComposeUrl(guestEmail, mailSubject, mailBody)}
-          target="_blank"
-          rel="noopener noreferrer"
-          className={cn(buttonVariants())}
-        >
-          Send email
-        </a>
         {episode.cal_com_booking_uid && episode.status !== "cancelled" ? (
           <>
             <form action={cancelEpisodeViaCal}>
@@ -328,6 +340,22 @@ export default async function EpisodeDetailPage({ params, searchParams }: Props)
         </CardHeader>
         <CardContent>
           <EpisodeStatusForm episodeId={episode.id} status={episode.status} />
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base">Compose email</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <SendEmailForm
+            episodeId={episode.id}
+            to={guestEmail}
+            defaultSubject={mailSubject}
+            defaultBody={mailBody}
+            gmailUrl={gmailComposeUrl(guestEmail, mailSubject, mailBody)}
+            emailConfigured={emailConfigured}
+          />
         </CardContent>
       </Card>
 

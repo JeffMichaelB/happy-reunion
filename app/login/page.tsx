@@ -2,6 +2,7 @@ import type { Metadata } from "next"
 import Link from "next/link"
 
 import { EmailPasswordForm } from "./email-password-form"
+import { ForgotPasswordForm } from "./forgot-password-form"
 
 interface LoginPageProps {
   searchParams: Promise<{ mode?: string }>
@@ -42,12 +43,14 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
         </h1>
         <p className="text-muted-foreground mt-1 text-sm">
           {isSignup
-            ? "Hosting takes a few minutes to set up."
+            ? "Hosting takes a few minutes to set up. Sign up with your email and password."
             : "Sign in with your email and password."}
         </p>
       </div>
 
       <EmailPasswordForm defaultMode={isSignup ? "signup" : "signin"} />
+
+      {!isSignup ? <ForgotPasswordForm /> : null}
 
       <p className="text-muted-foreground text-center text-xs">
         {isSignup ? (

@@ -159,6 +159,45 @@ export type Database = {
         }
         Relationships: []
       }
+      host_calcom_credentials: {
+        Row: {
+          access_token_encrypted: string | null
+          api_key_encrypted: string | null
+          calcom_username: string | null
+          expires_at: string | null
+          refresh_token_encrypted: string | null
+          selected_event_type_id: number | null
+          selected_event_type_slug: string | null
+          updated_at: string
+          user_id: string
+          webhook_id: string | null
+        }
+        Insert: {
+          access_token_encrypted?: string | null
+          api_key_encrypted?: string | null
+          calcom_username?: string | null
+          expires_at?: string | null
+          refresh_token_encrypted?: string | null
+          selected_event_type_id?: number | null
+          selected_event_type_slug?: string | null
+          updated_at?: string
+          user_id: string
+          webhook_id?: string | null
+        }
+        Update: {
+          access_token_encrypted?: string | null
+          api_key_encrypted?: string | null
+          calcom_username?: string | null
+          expires_at?: string | null
+          refresh_token_encrypted?: string | null
+          selected_event_type_id?: number | null
+          selected_event_type_slug?: string | null
+          updated_at?: string
+          user_id?: string
+          webhook_id?: string | null
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -198,42 +237,6 @@ export type Database = {
           slug?: string | null
           updated_at?: string
           workspace_email?: string | null
-        }
-        Relationships: []
-      }
-      host_calcom_credentials: {
-        Row: {
-          user_id: string
-          access_token_encrypted: string
-          refresh_token_encrypted: string
-          expires_at: string | null
-          calcom_username: string | null
-          selected_event_type_id: number | null
-          selected_event_type_slug: string | null
-          webhook_id: string | null
-          updated_at: string
-        }
-        Insert: {
-          user_id: string
-          access_token_encrypted: string
-          refresh_token_encrypted: string
-          expires_at?: string | null
-          calcom_username?: string | null
-          selected_event_type_id?: number | null
-          selected_event_type_slug?: string | null
-          webhook_id?: string | null
-          updated_at?: string
-        }
-        Update: {
-          user_id?: string
-          access_token_encrypted?: string
-          refresh_token_encrypted?: string
-          expires_at?: string | null
-          calcom_username?: string | null
-          selected_event_type_id?: number | null
-          selected_event_type_slug?: string | null
-          webhook_id?: string | null
-          updated_at?: string
         }
         Relationships: []
       }

@@ -1,6 +1,7 @@
 import type { Metadata } from "next"
 import { Geist_Mono, Outfit, Merriweather } from "next/font/google"
 
+import { AuthSessionHandler } from "@/components/auth-session-handler"
 import "./globals.css"
 import { cn } from "@/lib/utils"
 import { siteConfig } from "@/lib/seo/site"
@@ -55,7 +56,10 @@ export default function RootLayout({
         merriweatherHeading.variable,
       )}
     >
-      <body>{children}</body>
+      <body>
+        <AuthSessionHandler />
+        {children}
+      </body>
     </html>
   )
 }

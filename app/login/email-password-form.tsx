@@ -57,7 +57,11 @@ export function EmailPasswordForm({
 
     const { error } = await supabase.auth.signInWithPassword({ email, password })
     if (error) {
-      setMessage(error.message)
+      setMessage(
+        error.message === "Invalid login credentials"
+          ? "Invalid email or password."
+          : error.message,
+      )
       setPending(false)
       return
     }

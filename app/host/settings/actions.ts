@@ -4,7 +4,14 @@ import { headers } from "next/headers"
 import { revalidatePath } from "next/cache"
 import { redirect } from "next/navigation"
 
-import { createWebhook, deleteWebhook, getEventTypes } from "@/lib/calcom/api"
+import {
+  createWebhook,
+  deleteWebhook,
+  getEventTypes,
+  getProfile,
+  verifyApiKey,
+} from "@/lib/calcom/api"
+import { encryptToken } from "@/lib/crypto/tokens"
 import { createAdminClient } from "@/lib/supabase/admin"
 import { createClient } from "@/lib/supabase/server"
 
@@ -197,6 +204,100 @@ export async function disconnectCalCom() {
   revalidatePath("/host/dashboard")
 }
 
+export async function saveCalComApiKey(formData: FormData) {
+  const supabase = await createClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+  if (!user) redirect("/login")
+
+  const raw = String(formData.get("api_key") ?? "").trim()
+  if (raw.length < 8) {
+    throw new Error("Paste a valid Cal.com API key.")
+  }
+
+  const verified = await verifyApiKey(raw)
+  if (!verified) {
+    throw new Error(
+      "Cal.com rejected that API key. Double-check it in Cal.com → Settings → Developer → API keys.",
+    )
+  }
+
+  const admin = createAdminClient()
+
+  await admin.from("host_calcom_credentials").upsert(
+    {
+      user_id: user.id,
+      api_key_encrypted: encryptToken(raw),
+      calcom_username: verified.username || null,
+      updated_at: new Date().toISOString(),
+    },
+    { onConflict: "user_id" },
+  )
+
+  revalidatePath("/host/settings")
+  revalidatePath("/host/dashboard")
+}
+
+export async function removeCalComApiKey() {
+  const supabase = await createClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+  if (!user) redirect("/login")
+
+  const admin = createAdminClient()
+
+  const { data: creds } = await admin
+    .from("host_calcom_credentials")
+    .select(
+      "selected_event_type_id, webhook_id, access_token_encrypted, refresh_token_encrypted",
+    )
+    .eq("user_id", user.id)
+    .maybeSingle()
+
+  if (creds?.webhook_id && creds.selected_event_type_id) {
+    try {
+      await deleteWebhook(
+        user.id,
+        creds.selected_event_type_id,
+        creds.webhook_id,
+      )
+    } catch {
+      // best effort while we still have the key
+    }
+  }
+
+  const hasOAuth =
+    !!creds?.access_token_encrypted && !!creds.refresh_token_encrypted
+
+  if (hasOAuth) {
+    await admin
+      .from("host_calcom_credentials")
+      .update({
+        api_key_encrypted: null,
+        updated_at: new Date().toISOString(),
+      })
+      .eq("user_id", user.id)
+  } else {
+    await admin
+      .from("host_calcom_credentials")
+      .delete()
+      .eq("user_id", user.id)
+
+    await supabase
+      .from("profiles")
+      .update({
+        cal_com_booking_url: null,
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", user.id)
+  }
+
+  revalidatePath("/host/settings")
+  revalidatePath("/host/dashboard")
+}
+
 async function resolveSiteOrigin(): Promise<string> {
   const env = process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, "")
   if (env) return env
@@ -231,11 +332,9 @@ export async function selectEventType(formData: FormData) {
     .from("host_calcom_credentials")
     .select("webhook_id, selected_event_type_id, calcom_username")
     .eq("user_id", user.id)
-    .single()
+    .maybeSingle()
 
-  if (!creds) throw new Error("Cal.com not connected")
-
-  if (creds.webhook_id && creds.selected_event_type_id) {
+  if (creds?.webhook_id && creds.selected_event_type_id) {
     try {
       await deleteWebhook(user.id, creds.selected_event_type_id, creds.webhook_id)
     } catch {
@@ -261,19 +360,33 @@ export async function selectEventType(formData: FormData) {
     webhookSecret,
   )
 
-  await admin
-    .from("host_calcom_credentials")
-    .update({
+  let calcomUsername = creds?.calcom_username ?? null
+  if (!calcomUsername) {
+    try {
+      const p = await getProfile(user.id)
+      calcomUsername = p?.username ?? null
+    } catch {
+      // fall through; selected.bookingUrl is the backup
+    }
+  }
+
+  const bookingUrl =
+    selected.bookingUrl ??
+    (calcomUsername
+      ? `https://cal.com/${calcomUsername}/${selected.slug}`
+      : null)
+
+  await admin.from("host_calcom_credentials").upsert(
+    {
+      user_id: user.id,
       selected_event_type_id: eventTypeId,
       selected_event_type_slug: selected.slug,
       webhook_id: webhookId,
+      calcom_username: calcomUsername,
       updated_at: new Date().toISOString(),
-    })
-    .eq("user_id", user.id)
-
-  const bookingUrl = creds.calcom_username
-    ? `https://cal.com/${creds.calcom_username}/${selected.slug}`
-    : null
+    },
+    { onConflict: "user_id" },
+  )
 
   if (bookingUrl) {
     await supabase

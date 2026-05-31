@@ -3,8 +3,8 @@
 
 create table public.host_calcom_credentials (
   user_id uuid primary key references auth.users (id) on delete cascade,
-  access_token_encrypted text not null,
-  refresh_token_encrypted text not null,
+  access_token_encrypted text,
+  refresh_token_encrypted text,
   expires_at timestamptz,
   calcom_username text,
   selected_event_type_id integer,
