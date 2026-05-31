@@ -11,7 +11,7 @@ const CARDS = [
     initials: "MR",
     rotation: -6,
     translateX: -16,
-    translateY: 24,
+    translateY: 8,
     z: 1,
   },
   {
@@ -38,7 +38,7 @@ const CARDS = [
 
 export function ReunionCardsStack() {
   return (
-    <div className="relative mx-auto h-[420px] w-full max-w-[440px]">
+    <div className="relative mx-auto h-[380px] w-full max-w-[440px]">
       {CARDS.map((card, idx) => (
         <motion.div
           key={card.name}

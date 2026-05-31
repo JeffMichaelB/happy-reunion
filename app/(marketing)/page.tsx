@@ -93,9 +93,9 @@ export default function HomePage() {
     <>
       <section
         aria-labelledby="hero-heading"
-        className="relative lg:flex lg:min-h-[calc(100dvh-4rem)] lg:flex-col"
+        className="relative lg:flex lg:min-h-[calc(100svh-4rem)] lg:flex-col"
       >
-        <div className="mx-auto grid w-full max-w-7xl grid-cols-1 items-start gap-16 px-6 pb-12 pt-12 lg:flex-1 lg:grid-cols-12 lg:items-center lg:gap-12 lg:pb-20 lg:pt-20">
+        <div className="mx-auto grid w-full max-w-7xl grid-cols-1 items-start gap-16 px-6 pb-12 pt-12 lg:flex-1 lg:grid-cols-12 lg:items-center lg:gap-12 lg:py-12">
           <div className="lg:col-span-7">
             <FadeUp>
               <p className="font-mono text-[11px] font-medium uppercase tracking-[0.18em] text-muted-foreground">
@@ -107,7 +107,7 @@ export default function HomePage() {
             <FadeUp delay={0.08}>
               <h1
                 id="hero-heading"
-                className="mt-8 font-heading text-[clamp(3rem,7.4vw,6.5rem)] font-bold leading-[0.98] tracking-[-0.02em] text-foreground"
+                className="mt-8 font-heading text-[clamp(2.75rem,6.4vw,5.5rem)] font-bold leading-[0.98] tracking-[-0.02em] text-foreground"
               >
                 The stories that
                 <br className="hidden sm:block" />{" "}
@@ -117,7 +117,7 @@ export default function HomePage() {
             </FadeUp>
 
             <FadeUp delay={0.16}>
-              <p className="mt-8 max-w-xl text-lg leading-relaxed text-muted-foreground md:text-xl">
+              <p className="mt-6 max-w-xl text-lg leading-relaxed text-muted-foreground md:text-xl">
                 Conversations about the distance between who we were then and
                 who we are now &mdash; the pivots, the reinventions, the beauty
                 of the unexpected.
@@ -125,9 +125,9 @@ export default function HomePage() {
             </FadeUp>
 
             <FadeUp delay={0.24}>
-              <div className="mt-12 flex flex-col items-stretch gap-3 sm:flex-row sm:items-center">
+              <div className="mt-8 flex flex-col items-stretch gap-3 sm:flex-row sm:items-center">
                 <Link
-                  href="/login?mode=signup"
+                  href="/signup"
                   className="group inline-flex h-12 items-center justify-center gap-2 rounded-md bg-primary px-6 text-sm font-medium text-primary-foreground shadow-[rgba(255,255,255,0.2)_0px_0.5px_0px_0px_inset,rgba(0,0,0,0.2)_0px_0px_0px_0.5px_inset,rgba(0,0,0,0.05)_0px_1px_2px_0px] transition-all hover:opacity-85 active:translate-y-px"
                 >
                   Host a Reunion
@@ -150,7 +150,7 @@ export default function HomePage() {
             </FadeUp>
           </div>
 
-          <div className="hidden lg:col-span-5 lg:block">
+          <div className="hidden lg:col-span-5 lg:block lg:-translate-y-6">
             <ReunionCardsStack />
           </div>
         </div>

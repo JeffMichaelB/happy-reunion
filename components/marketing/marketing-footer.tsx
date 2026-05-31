@@ -54,7 +54,7 @@ export function MarketingFooter() {
               up.
             </p>
             <Link
-              href="/login?mode=signup"
+              href="/signup"
               className="mt-6 inline-flex h-10 items-center gap-2 rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground shadow-[rgba(255,255,255,0.2)_0px_0.5px_0px_0px_inset,rgba(0,0,0,0.2)_0px_0px_0px_0.5px_inset,rgba(0,0,0,0.05)_0px_1px_2px_0px] transition-all hover:opacity-85 active:translate-y-px"
             >
               Host a Reunion

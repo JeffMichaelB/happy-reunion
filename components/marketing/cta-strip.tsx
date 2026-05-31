@@ -12,7 +12,7 @@ export function CtaStrip({
   heading = "Ready to start your first Reunion?",
   subheading = "Hosting takes a few minutes to set up. The conversation lasts a lifetime.",
   ctaLabel = "Host a Reunion",
-  ctaHref = "/login?mode=signup",
+  ctaHref = "/signup",
 }: CtaStripProps) {
   return (
     <section className="mx-auto mt-32 max-w-3xl md:mt-40">
