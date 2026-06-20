@@ -1,3 +1,5 @@
+import { ArrowSquareOut } from "@phosphor-icons/react/dist/ssr"
+import Link from "next/link"
 import { redirect } from "next/navigation"
 
 import { getEnvBookingUrl, getEventTypes, isEnvKeyConfigured } from "@/lib/calcom/api"
@@ -302,7 +304,15 @@ export default async function HostSettingsPage() {
                           . Stored encrypted at rest.
                         </p>
                       </div>
-                      <Button type="submit">Save API key</Button>
+                      <div className="flex flex-wrap items-center gap-3">
+                        <Button type="submit">Save API key</Button>
+                        <Link
+                          href="/host/onboarding"
+                          className="text-sm underline underline-offset-4"
+                        >
+                          Use the guided setup instead
+                        </Link>
+                      </div>
                     </form>
                   )}
                 </div>
@@ -356,6 +366,15 @@ export default async function HostSettingsPage() {
                           />
                         </div>
                         <CopyScheduleLinkButton url={effectiveBookingUrl} />
+                        <a
+                          href={effectiveBookingUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex h-9 items-center gap-1 rounded-md border border-[rgba(28,28,28,0.4)] bg-transparent px-3 text-sm font-medium transition-colors hover:bg-[rgba(28,28,28,0.04)]"
+                        >
+                          <ArrowSquareOut className="size-3.5" weight="bold" />
+                          Open
+                        </a>
                       </div>
                       <p className="text-xs text-muted-foreground">
                         Share this link with guests so they can book time with
