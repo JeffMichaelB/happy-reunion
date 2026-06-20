@@ -14,17 +14,9 @@ import {
   verifyApiKey,
 } from "@/lib/calcom/api"
 import { encryptToken } from "@/lib/crypto/tokens"
+import { ensureProfileSlug, normalizeSlug } from "@/lib/host/slug"
 import { createAdminClient } from "@/lib/supabase/admin"
 import { createClient } from "@/lib/supabase/server"
-
-function normalizeSlug(raw: string): string | null {
-  const s = raw
-    .trim()
-    .toLowerCase()
-    .replace(/\s+/g, "-")
-    .replace(/[^a-z0-9-]/g, "")
-  return s.length > 0 ? s : null
-}
 
 export async function updateProfile(formData: FormData) {
   const supabase = await createClient()
@@ -326,13 +318,21 @@ export async function selectEventType(formData: FormData) {
     }
   }
 
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("slug")
-    .eq("id", user.id)
-    .single()
+  let calcomUsername = creds?.calcom_username ?? null
+  if (!calcomUsername) {
+    try {
+      const p = await getProfile(user.id)
+      calcomUsername = p?.username ?? null
+    } catch {
+      // fall through; selected.bookingUrl is the backup
+    }
+  }
 
-  const slug = profile?.slug ?? user.id
+  const slug = await ensureProfileSlug(admin, user.id, {
+    calcomUsername,
+    email: user.email,
+  })
+
   const origin = await resolveSiteOrigin()
   // Each host's webhook is registered with its own random secret so the
   // handler can verify deliveries against that host alone, never a shared key.
@@ -345,16 +345,6 @@ export async function selectEventType(formData: FormData) {
     subscriberUrl,
     webhookSecret,
   )
-
-  let calcomUsername = creds?.calcom_username ?? null
-  if (!calcomUsername) {
-    try {
-      const p = await getProfile(user.id)
-      calcomUsername = p?.username ?? null
-    } catch {
-      // fall through; selected.bookingUrl is the backup
-    }
-  }
 
   const bookingUrl =
     selected.bookingUrl ??
