@@ -325,7 +325,7 @@ export default async function HostSettingsPage() {
               <>
                 <Separator />
                 <form action={selectEventType} className="space-y-3">
-                  <Label htmlFor="event_type_id">Event type for guest bookings</Label>
+                  <Label htmlFor="event_type_id">1-hour reunion event</Label>
                   <select
                     id="event_type_id"
                     name="event_type_id"
@@ -335,13 +335,14 @@ export default async function HostSettingsPage() {
                     <option value="">Select an event type...</option>
                     {eventTypes.map((et) => (
                       <option key={et.id} value={et.id}>
-                        {et.title} ({et.length} min)
+                        {et.title} (1 hour)
                       </option>
                     ))}
                   </select>
                   {eventTypes.length === 0 ? (
                     <p className="text-xs text-muted-foreground">
-                      No event types found. Create one in Cal.com first.
+                      No 1-hour event types found. In Cal.com, create an event
+                      type set to 60 minutes (e.g. &ldquo;Reunion&rdquo;).
                     </p>
                   ) : (
                     <p className="text-xs text-muted-foreground">

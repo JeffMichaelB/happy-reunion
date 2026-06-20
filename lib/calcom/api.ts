@@ -8,6 +8,9 @@ const CALCOM_API_BASE = "https://api.cal.com/v2"
 // /me works with any recent version.
 const API_VERSION = "2024-06-14"
 
+/** Only Cal.com event types of this length are offered for guest bookings. */
+export const REUNION_DURATION_MINUTES = 60
+
 type AuthResolution = { kind: "api_key"; token: string; source: "env" | "db" }
 
 function getEnvApiKey(): string | null {
@@ -124,13 +127,15 @@ export async function getEventTypes(userId: string): Promise<CalEventType[]> {
     (Array.isArray(json.data)
       ? (json.data as Array<Record<string, unknown>>)
       : [])
-  return items.map((et) => ({
-    id: et.id as number,
-    slug: et.slug as string,
-    title: et.title as string,
-    length: (et.length ?? et.lengthInMinutes) as number,
-    bookingUrl: (et.bookingUrl as string | undefined) ?? null,
-  }))
+  return items
+    .map((et) => ({
+      id: et.id as number,
+      slug: et.slug as string,
+      title: et.title as string,
+      length: (et.length ?? et.lengthInMinutes) as number,
+      bookingUrl: (et.bookingUrl as string | undefined) ?? null,
+    }))
+    .filter((et) => et.length === REUNION_DURATION_MINUTES)
 }
 
 async function getProfileForToken(

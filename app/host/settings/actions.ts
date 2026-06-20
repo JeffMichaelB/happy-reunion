@@ -11,6 +11,7 @@ import {
   deleteWebhook,
   getEventTypes,
   getProfile,
+  REUNION_DURATION_MINUTES,
   verifyApiKey,
 } from "@/lib/calcom/api"
 import { encryptToken } from "@/lib/crypto/tokens"
@@ -299,7 +300,14 @@ export async function selectEventType(formData: FormData) {
   const eventTypes = await getEventTypes(user.id)
   const selected = eventTypes.find((et) => et.id === eventTypeId)
   if (!selected) {
-    throw new Error("Event type not found in your Cal.com account")
+    throw new Error(
+      `Event type not found. Create a ${REUNION_DURATION_MINUTES}-minute event in Cal.com first.`,
+    )
+  }
+  if (selected.length !== REUNION_DURATION_MINUTES) {
+    throw new Error(
+      `Only ${REUNION_DURATION_MINUTES}-minute reunion slots are supported.`,
+    )
   }
 
   const admin = createAdminClient()

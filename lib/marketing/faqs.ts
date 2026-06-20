@@ -41,7 +41,7 @@ export const FAQS: readonly Faq[] = [
     category: "Hosting",
     question: "Is there a time limit for a Reunion?",
     answer:
-      "There's no hard limit — a Reunion can run as long as the conversation calls for. That said, we find that 50–60 minutes is a natural sweet spot: long enough for depth, short enough to leave everyone wanting more.",
+      "Reunions are scheduled for one hour — long enough for depth, short enough to leave everyone wanting more.",
   },
   {
     category: "Privacy",

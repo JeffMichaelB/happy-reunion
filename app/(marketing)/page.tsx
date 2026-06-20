@@ -32,7 +32,7 @@ const STEPS = [
   {
     label: "02",
     title: "Sit down for a real conversation",
-    body: "Fifty minutes, two voices, no algorithm in the room. Record in-person or remote. The guest sets what is on or off limits.",
+    body: "One hour, two voices, no algorithm in the room. Record in-person or remote. The guest sets what is on or off limits.",
   },
   {
     label: "03",

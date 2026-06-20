@@ -256,17 +256,19 @@ async function EventStep({ userId }: { userId: string }) {
         <div className="mb-2 flex size-10 items-center justify-center rounded-lg bg-foreground/[0.04]">
           <CheckCircle className="size-5" weight="regular" />
         </div>
-        <CardTitle>Pick your booking event type</CardTitle>
+        <CardTitle>Pick your 1-hour reunion event</CardTitle>
         <CardDescription>
-          This is the event guests will book. We&rsquo;ll register a webhook so
-          bookings sync automatically.
+          Guests book a single 1-hour slot. Choose the 60-minute event type from
+          your Cal.com account — we&rsquo;ll register a webhook so bookings sync
+          automatically.
         </CardDescription>
       </CardHeader>
       <CardContent>
         {eventTypes.length === 0 ? (
           <p className="text-sm text-muted-foreground">
-            No event types found in your Cal.com account yet. Create one in
-            Cal.com, then{" "}
+            No 1-hour event types found in your Cal.com account. In Cal.com,
+            create an event type set to <span className="font-medium">60
+            minutes</span> (e.g. &ldquo;Reunion&rdquo;), then{" "}
             <Link
               href="/host/onboarding?step=event"
               className="underline underline-offset-4"
@@ -288,7 +290,7 @@ async function EventStep({ userId }: { userId: string }) {
                 <option value="">Select an event type...</option>
                 {eventTypes.map((et) => (
                   <option key={et.id} value={et.id}>
-                    {et.title} ({et.length} min)
+                    {et.title} (1 hour)
                   </option>
                 ))}
               </select>
