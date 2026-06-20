@@ -252,9 +252,7 @@ export async function removeCalComApiKey() {
 
   const { data: creds } = await admin
     .from("host_calcom_credentials")
-    .select(
-      "selected_event_type_id, webhook_id, access_token_encrypted, refresh_token_encrypted",
-    )
+    .select("selected_event_type_id, webhook_id")
     .eq("user_id", user.id)
     .maybeSingle()
 
@@ -270,31 +268,15 @@ export async function removeCalComApiKey() {
     }
   }
 
-  const hasOAuth =
-    !!creds?.access_token_encrypted && !!creds.refresh_token_encrypted
+  await admin.from("host_calcom_credentials").delete().eq("user_id", user.id)
 
-  if (hasOAuth) {
-    await admin
-      .from("host_calcom_credentials")
-      .update({
-        api_key_encrypted: null,
-        updated_at: new Date().toISOString(),
-      })
-      .eq("user_id", user.id)
-  } else {
-    await admin
-      .from("host_calcom_credentials")
-      .delete()
-      .eq("user_id", user.id)
-
-    await supabase
-      .from("profiles")
-      .update({
-        cal_com_booking_url: null,
-        updated_at: new Date().toISOString(),
-      })
-      .eq("id", user.id)
-  }
+  await supabase
+    .from("profiles")
+    .update({
+      cal_com_booking_url: null,
+      updated_at: new Date().toISOString(),
+    })
+    .eq("id", user.id)
 
   revalidatePath("/host/settings")
   revalidatePath("/host/dashboard")

@@ -1,16 +1,14 @@
-import { decryptToken, encryptToken } from "@/lib/crypto/tokens"
-
-import { CALCOM_API_BASE, refreshAccessToken } from "./oauth"
+import { decryptToken } from "@/lib/crypto/tokens"
 import { createAdminClient } from "@/lib/supabase/admin"
+
+const CALCOM_API_BASE = "https://api.cal.com/v2"
 
 // Cal.com v2 API versions vary per endpoint. The "stable" version for
 // listing /event-types and /webhooks with a personal API key is 2024-06-14.
 // /me works with any recent version.
 const API_VERSION = "2024-06-14"
 
-type AuthResolution =
-  | { kind: "api_key"; token: string; source: "env" | "db" }
-  | { kind: "oauth"; token: string }
+type AuthResolution = { kind: "api_key"; token: string; source: "env" | "db" }
 
 function getEnvApiKey(): string | null {
   const key = process.env.CALCOM_API_KEY?.trim()
@@ -21,9 +19,7 @@ async function getAuth(userId: string): Promise<AuthResolution> {
   const admin = createAdminClient()
   const { data } = await admin
     .from("host_calcom_credentials")
-    .select(
-      "api_key_encrypted, access_token_encrypted, refresh_token_encrypted, expires_at",
-    )
+    .select("api_key_encrypted")
     .eq("user_id", userId)
     .maybeSingle()
 
@@ -35,43 +31,38 @@ async function getAuth(userId: string): Promise<AuthResolution> {
     }
   }
 
-  if (data?.access_token_encrypted && data.refresh_token_encrypted) {
-    const now = new Date()
-    const expiresAt = data.expires_at ? new Date(data.expires_at) : null
-
-    if (expiresAt && expiresAt > now) {
-      return {
-        kind: "oauth",
-        token: decryptToken(data.access_token_encrypted),
-      }
-    }
-
-    const refreshToken = decryptToken(data.refresh_token_encrypted)
-    const tokens = await refreshAccessToken(refreshToken)
-
-    const newExpiresAt = new Date(
-      Date.now() + tokens.expires_in * 1000,
-    ).toISOString()
-
-    await admin
-      .from("host_calcom_credentials")
-      .update({
-        access_token_encrypted: encryptToken(tokens.access_token),
-        refresh_token_encrypted: encryptToken(tokens.refresh_token),
-        expires_at: newExpiresAt,
-        updated_at: new Date().toISOString(),
-      })
-      .eq("user_id", userId)
-
-    return { kind: "oauth", token: tokens.access_token }
-  }
-
   const envKey = getEnvApiKey()
   if (envKey) {
     return { kind: "api_key", token: envKey, source: "env" }
   }
 
   throw new Error("Cal.com not connected")
+}
+
+/**
+ * A host is connected when scheduling will actually work end to end: they have
+ * a usable API key (their own stored key, or the shared env key) AND a booking
+ * URL guests can open. Used to gate onboarding.
+ */
+export async function isConnected(userId: string): Promise<boolean> {
+  const admin = createAdminClient()
+  const { data: creds } = await admin
+    .from("host_calcom_credentials")
+    .select("api_key_encrypted")
+    .eq("user_id", userId)
+    .maybeSingle()
+
+  const hasKey = !!creds?.api_key_encrypted || isEnvKeyConfigured()
+  if (!hasKey) return false
+
+  const { data: profile } = await admin
+    .from("profiles")
+    .select("cal_com_booking_url")
+    .eq("id", userId)
+    .single()
+
+  const bookingUrl = profile?.cal_com_booking_url ?? getEnvBookingUrl()
+  return !!bookingUrl
 }
 
 function headers(token: string): Record<string, string> {
@@ -120,11 +111,9 @@ export async function getEventTypes(userId: string): Promise<CalEventType[]> {
 
   // For a personal API key, /event-types must be scoped by username.
   let url = `${CALCOM_API_BASE}/event-types`
-  if (auth.kind === "api_key") {
-    const profile = await getProfileForToken(auth.token)
-    if (profile?.username) {
-      url = `${CALCOM_API_BASE}/event-types?username=${encodeURIComponent(profile.username)}`
-    }
+  const profile = await getProfileForToken(auth.token)
+  if (profile?.username) {
+    url = `${CALCOM_API_BASE}/event-types?username=${encodeURIComponent(profile.username)}`
   }
 
   const res = await fetch(url, { headers: headers(auth.token) })
