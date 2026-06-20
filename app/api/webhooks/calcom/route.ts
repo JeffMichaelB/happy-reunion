@@ -2,15 +2,18 @@ import { createHmac, timingSafeEqual } from "node:crypto"
 
 import { NextResponse } from "next/server"
 
-import { findOrCreateGuestId } from "@/lib/guests/link"
+import {
+  type CalBooking,
+  notifyHostOfBooking,
+  syncBookingCancelled,
+  syncBookingCreated,
+  syncBookingRescheduled,
+} from "@/lib/calcom/sync-booking"
+import { decryptToken } from "@/lib/crypto/tokens"
 import { createAdminClient } from "@/lib/supabase/admin"
 
-function verifySignature(payload: string, signature: string): boolean {
-  const secret = process.env.CALCOM_WEBHOOK_SECRET
-  if (!secret) return false
-
+function signatureMatches(payload: string, secret: string, signature: string): boolean {
   const expected = createHmac("sha256", secret).update(payload).digest("hex")
-
   try {
     return timingSafeEqual(
       Buffer.from(signature, "utf8"),
@@ -33,27 +36,29 @@ type CalComPayload = {
   }
 }
 
+function toCalBooking(payload: CalComPayload["payload"]): CalBooking {
+  const guest = payload.attendees?.[0]
+  return {
+    uid: payload.uid,
+    title: payload.title ?? null,
+    startTime: payload.startTime ?? null,
+    endTime: payload.endTime ?? null,
+    guestEmail: guest?.email ?? null,
+    guestName: guest?.name ?? null,
+    rescheduleUid: payload.rescheduleUid ?? null,
+  }
+}
+
 export async function POST(request: Request) {
+  // 1. Resolve which host this delivery is for.
   const url = new URL(request.url)
   const slug = url.searchParams.get("slug")
   if (!slug) {
     return NextResponse.json({ error: "missing slug" }, { status: 400 })
   }
 
+  // 2. Look up the host by slug before doing anything with the body.
   const body = await request.text()
-  const signature = request.headers.get("x-cal-signature-256") ?? ""
-
-  if (!verifySignature(body, signature)) {
-    return NextResponse.json({ error: "invalid signature" }, { status: 401 })
-  }
-
-  let event: CalComPayload
-  try {
-    event = JSON.parse(body) as CalComPayload
-  } catch {
-    return NextResponse.json({ error: "invalid json" }, { status: 400 })
-  }
-
   const admin = createAdminClient()
 
   const { data: profile } = await admin
@@ -67,54 +72,50 @@ export async function POST(request: Request) {
   }
 
   const hostId = profile.id
-  const { triggerEvent, payload } = event
-  const uid = payload.uid
-  const startsAt = payload.startTime
-  const endsAt = payload.endTime
-  const guest = payload.attendees?.[0]
 
-  switch (triggerEvent) {
+  // 3. Verify the signature against THIS host's per-host secret.
+  const { data: creds } = await admin
+    .from("host_calcom_credentials")
+    .select("webhook_secret_encrypted")
+    .eq("user_id", hostId)
+    .maybeSingle()
+
+  const encryptedSecret = creds?.webhook_secret_encrypted
+  if (!encryptedSecret) {
+    return NextResponse.json({ error: "no webhook secret" }, { status: 401 })
+  }
+
+  const signature = request.headers.get("x-cal-signature-256") ?? ""
+  if (!signatureMatches(body, decryptToken(encryptedSecret), signature)) {
+    return NextResponse.json({ error: "invalid signature" }, { status: 401 })
+  }
+
+  // 4. Parse and route the verified event.
+  let event: CalComPayload
+  try {
+    event = JSON.parse(body) as CalComPayload
+  } catch {
+    return NextResponse.json({ error: "invalid json" }, { status: 400 })
+  }
+
+  const booking = toCalBooking(event.payload)
+
+  switch (event.triggerEvent) {
     case "BOOKING_CREATED": {
-      const guestId = await findOrCreateGuestId(
-        admin,
-        hostId,
-        guest?.email,
-        guest?.name,
-      )
-      await admin.from("bookings").insert({
-        host_id: hostId,
-        guest_id: guestId,
-        guest_email: guest?.email ?? "unknown@guest.com",
-        guest_name: guest?.name ?? "Guest",
-        starts_at: startsAt,
-        ends_at: endsAt,
-        topic: payload.title ?? null,
-        status: "confirmed",
-        cal_com_booking_uid: uid,
-      })
+      const created = await syncBookingCreated(admin, hostId, booking)
+      if (created) {
+        await notifyHostOfBooking(admin, hostId, booking)
+      }
       break
     }
 
     case "BOOKING_RESCHEDULED": {
-      const lookupUid = payload.rescheduleUid ?? uid
-      await admin
-        .from("bookings")
-        .update({
-          starts_at: startsAt,
-          ends_at: endsAt,
-          cal_com_booking_uid: uid,
-        })
-        .eq("host_id", hostId)
-        .eq("cal_com_booking_uid", lookupUid)
+      await syncBookingRescheduled(admin, hostId, booking)
       break
     }
 
     case "BOOKING_CANCELLED": {
-      await admin
-        .from("bookings")
-        .update({ status: "cancelled" })
-        .eq("host_id", hostId)
-        .eq("cal_com_booking_uid", uid)
+      await syncBookingCancelled(admin, hostId, booking.uid)
       break
     }
 

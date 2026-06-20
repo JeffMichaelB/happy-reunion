@@ -1,5 +1,7 @@
 "use server"
 
+import { randomBytes } from "node:crypto"
+
 import { headers } from "next/headers"
 import { revalidatePath } from "next/cache"
 import { redirect } from "next/navigation"
@@ -350,7 +352,9 @@ export async function selectEventType(formData: FormData) {
 
   const slug = profile?.slug ?? user.id
   const origin = await resolveSiteOrigin()
-  const webhookSecret = process.env.CALCOM_WEBHOOK_SECRET ?? ""
+  // Each host's webhook is registered with its own random secret so the
+  // handler can verify deliveries against that host alone, never a shared key.
+  const webhookSecret = randomBytes(32).toString("hex")
   const subscriberUrl = `${origin}/api/webhooks/calcom?slug=${encodeURIComponent(slug)}`
 
   const webhookId = await createWebhook(
@@ -382,6 +386,7 @@ export async function selectEventType(formData: FormData) {
       selected_event_type_id: eventTypeId,
       selected_event_type_slug: selected.slug,
       webhook_id: webhookId,
+      webhook_secret_encrypted: webhookId ? encryptToken(webhookSecret) : null,
       calcom_username: calcomUsername,
       updated_at: new Date().toISOString(),
     },
