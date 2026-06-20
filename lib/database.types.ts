@@ -161,40 +161,34 @@ export type Database = {
       }
       host_calcom_credentials: {
         Row: {
-          access_token_encrypted: string | null
           api_key_encrypted: string | null
           calcom_username: string | null
-          expires_at: string | null
-          refresh_token_encrypted: string | null
           selected_event_type_id: number | null
           selected_event_type_slug: string | null
           updated_at: string
           user_id: string
           webhook_id: string | null
+          webhook_secret_encrypted: string | null
         }
         Insert: {
-          access_token_encrypted?: string | null
           api_key_encrypted?: string | null
           calcom_username?: string | null
-          expires_at?: string | null
-          refresh_token_encrypted?: string | null
           selected_event_type_id?: number | null
           selected_event_type_slug?: string | null
           updated_at?: string
           user_id: string
           webhook_id?: string | null
+          webhook_secret_encrypted?: string | null
         }
         Update: {
-          access_token_encrypted?: string | null
           api_key_encrypted?: string | null
           calcom_username?: string | null
-          expires_at?: string | null
-          refresh_token_encrypted?: string | null
           selected_event_type_id?: number | null
           selected_event_type_slug?: string | null
           updated_at?: string
           user_id?: string
           webhook_id?: string | null
+          webhook_secret_encrypted?: string | null
         }
         Relationships: []
       }
