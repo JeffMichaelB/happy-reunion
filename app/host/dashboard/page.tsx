@@ -3,7 +3,7 @@ import { redirect } from "next/navigation"
 
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent } from "@/components/ui/card"
-import { getEnvBookingUrl } from "@/lib/calcom/api"
+import { getEnvBookingUrl, isConnected } from "@/lib/calcom/api"
 import { createClient } from "@/lib/supabase/server"
 
 import { BookingLinkBanner } from "./booking-link-banner"
@@ -75,8 +75,10 @@ export default async function DashboardPage() {
     ["confirmed", "pending_guest", "draft"].includes(e.status),
   ).length
 
-  const calComUrl =
-    profile?.cal_com_booking_url ?? getEnvBookingUrl() ?? null
+  const connected = await isConnected(user.id)
+  const calComUrl = connected
+    ? (profile?.cal_com_booking_url ?? getEnvBookingUrl() ?? null)
+    : null
   const hostName = profile?.display_name ?? profile?.show_name ?? null
 
   return (

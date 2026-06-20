@@ -2,7 +2,7 @@ import { ArrowSquareOut } from "@phosphor-icons/react/dist/ssr"
 import Link from "next/link"
 import { redirect } from "next/navigation"
 
-import { getEnvBookingUrl, getEventTypes, isEnvKeyConfigured } from "@/lib/calcom/api"
+import { getEnvBookingUrl, getEventTypes, isConnected, isEnvKeyConfigured } from "@/lib/calcom/api"
 import { SignOutButton } from "@/components/sign-out-button"
 import {
   Avatar,
@@ -74,12 +74,14 @@ export default async function HostSettingsPage() {
 
   const hasApiKey = !!calComCreds?.api_key_encrypted
   const envKeyConfigured = isEnvKeyConfigured()
-  const calComConnected = hasApiKey || envKeyConfigured
+  const calComConnected = await isConnected(user.id)
   const connectionLabel = envKeyConfigured
     ? "Connected (server)"
     : hasApiKey
       ? "Connected via API key"
-      : "Not connected"
+      : calComConnected
+        ? "Connected"
+        : "Not connected"
 
   let eventTypes: Awaited<ReturnType<typeof getEventTypes>> = []
   if (calComConnected) {
