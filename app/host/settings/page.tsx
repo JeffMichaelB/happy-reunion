@@ -1,6 +1,8 @@
+import { ArrowSquareOut } from "@phosphor-icons/react/dist/ssr"
+import Link from "next/link"
 import { redirect } from "next/navigation"
 
-import { getEnvBookingUrl, getEventTypes, isEnvKeyConfigured } from "@/lib/calcom/api"
+import { getEnvBookingUrl, getEventTypes, isConnected, isEnvKeyConfigured } from "@/lib/calcom/api"
 import { SignOutButton } from "@/components/sign-out-button"
 import {
   Avatar,
@@ -41,12 +43,7 @@ function initialsFromName(name: string | null | undefined) {
   return (a + b).toUpperCase() || "?"
 }
 
-export default async function HostSettingsPage({
-  searchParams,
-}: {
-  searchParams: Promise<{ calcom?: string }>
-}) {
-  const q = await searchParams
+export default async function HostSettingsPage() {
 
   const supabase = await createClient()
   const {
@@ -70,21 +67,20 @@ export default async function HostSettingsPage({
   const { data: calComCreds } = await admin
     .from("host_calcom_credentials")
     .select(
-      "user_id, calcom_username, selected_event_type_id, selected_event_type_slug, api_key_encrypted, access_token_encrypted",
+      "user_id, calcom_username, selected_event_type_id, selected_event_type_slug, api_key_encrypted",
     )
     .eq("user_id", user.id)
     .maybeSingle()
 
   const hasApiKey = !!calComCreds?.api_key_encrypted
-  const hasOAuth = !!calComCreds?.access_token_encrypted
   const envKeyConfigured = isEnvKeyConfigured()
-  const calComConnected = hasApiKey || hasOAuth || envKeyConfigured
+  const calComConnected = await isConnected(user.id)
   const connectionLabel = envKeyConfigured
     ? "Connected (server)"
     : hasApiKey
       ? "Connected via API key"
-      : hasOAuth
-        ? "Connected via OAuth"
+      : calComConnected
+        ? "Connected"
         : "Not connected"
 
   let eventTypes: Awaited<ReturnType<typeof getEventTypes>> = []
@@ -122,17 +118,6 @@ export default async function HostSettingsPage({
           Profile, scheduling integration, and account.
         </p>
       </div>
-
-      {q.calcom === "connected" ? (
-        <p className="rounded-md border border-[#86efac] bg-[#dcfce7]/40 px-3 py-2 text-sm text-[#166534]">
-          Cal.com connected successfully. Select an event type below to finish setup.
-        </p>
-      ) : null}
-      {q.calcom === "error" ? (
-        <p className="rounded-md border border-[#fca5a5] bg-[#fee2e2]/40 px-3 py-2 text-sm text-[#991b1b]">
-          Failed to connect Cal.com. Please try again.
-        </p>
-      ) : null}
 
       <section className="space-y-4">
         <h2 className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
@@ -321,7 +306,15 @@ export default async function HostSettingsPage({
                           . Stored encrypted at rest.
                         </p>
                       </div>
-                      <Button type="submit">Save API key</Button>
+                      <div className="flex flex-wrap items-center gap-3">
+                        <Button type="submit">Save API key</Button>
+                        <Link
+                          href="/host/onboarding"
+                          className="text-sm underline underline-offset-4"
+                        >
+                          Use the guided setup instead
+                        </Link>
+                      </div>
                     </form>
                   )}
                 </div>
@@ -375,6 +368,15 @@ export default async function HostSettingsPage({
                           />
                         </div>
                         <CopyScheduleLinkButton url={effectiveBookingUrl} />
+                        <a
+                          href={effectiveBookingUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex h-9 items-center gap-1 rounded-md border border-[rgba(28,28,28,0.4)] bg-transparent px-3 text-sm font-medium transition-colors hover:bg-[rgba(28,28,28,0.04)]"
+                        >
+                          <ArrowSquareOut className="size-3.5" weight="bold" />
+                          Open
+                        </a>
                       </div>
                       <p className="text-xs text-muted-foreground">
                         Share this link with guests so they can book time with

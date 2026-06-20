@@ -35,6 +35,8 @@ vercel --prod --yes --scope jeffreys-projects-1207f4a2
 **You still need to add:**
 
 - `SUPABASE_SERVICE_ROLE_KEY` — Production, Preview, (optional) Development; mark sensitive.
-- `CALCOM_WEBHOOK_SECRET` — same environments; the HMAC secret you configured in Cal.com webhooks.
+- `TOKEN_ENCRYPTION_KEY` — Production, Preview, Development; mark sensitive. At least 32 characters; encrypts each host's Cal.com API key and per-host webhook secret at rest.
+
+Cal.com uses per-host secrets (no global webhook secret). `CALCOM_WEBHOOK_SECRET` is deprecated and only needed transitionally for hosts whose webhooks predate this change.
 
 Optional: `NEXT_PUBLIC_SITE_URL` = your canonical site URL (e.g. production `https://…vercel.app` or custom domain) for stable auth `redirectTo`.

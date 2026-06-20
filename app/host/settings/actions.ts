@@ -1,5 +1,7 @@
 "use server"
 
+import { randomBytes } from "node:crypto"
+
 import { headers } from "next/headers"
 import { revalidatePath } from "next/cache"
 import { redirect } from "next/navigation"
@@ -12,17 +14,9 @@ import {
   verifyApiKey,
 } from "@/lib/calcom/api"
 import { encryptToken } from "@/lib/crypto/tokens"
+import { ensureProfileSlug, normalizeSlug } from "@/lib/host/slug"
 import { createAdminClient } from "@/lib/supabase/admin"
 import { createClient } from "@/lib/supabase/server"
-
-function normalizeSlug(raw: string): string | null {
-  const s = raw
-    .trim()
-    .toLowerCase()
-    .replace(/\s+/g, "-")
-    .replace(/[^a-z0-9-]/g, "")
-  return s.length > 0 ? s : null
-}
 
 export async function updateProfile(formData: FormData) {
   const supabase = await createClient()
@@ -250,9 +244,7 @@ export async function removeCalComApiKey() {
 
   const { data: creds } = await admin
     .from("host_calcom_credentials")
-    .select(
-      "selected_event_type_id, webhook_id, access_token_encrypted, refresh_token_encrypted",
-    )
+    .select("selected_event_type_id, webhook_id")
     .eq("user_id", user.id)
     .maybeSingle()
 
@@ -268,31 +260,15 @@ export async function removeCalComApiKey() {
     }
   }
 
-  const hasOAuth =
-    !!creds?.access_token_encrypted && !!creds.refresh_token_encrypted
+  await admin.from("host_calcom_credentials").delete().eq("user_id", user.id)
 
-  if (hasOAuth) {
-    await admin
-      .from("host_calcom_credentials")
-      .update({
-        api_key_encrypted: null,
-        updated_at: new Date().toISOString(),
-      })
-      .eq("user_id", user.id)
-  } else {
-    await admin
-      .from("host_calcom_credentials")
-      .delete()
-      .eq("user_id", user.id)
-
-    await supabase
-      .from("profiles")
-      .update({
-        cal_com_booking_url: null,
-        updated_at: new Date().toISOString(),
-      })
-      .eq("id", user.id)
-  }
+  await supabase
+    .from("profiles")
+    .update({
+      cal_com_booking_url: null,
+      updated_at: new Date().toISOString(),
+    })
+    .eq("id", user.id)
 
   revalidatePath("/host/settings")
   revalidatePath("/host/dashboard")
@@ -342,24 +318,6 @@ export async function selectEventType(formData: FormData) {
     }
   }
 
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("slug")
-    .eq("id", user.id)
-    .single()
-
-  const slug = profile?.slug ?? user.id
-  const origin = await resolveSiteOrigin()
-  const webhookSecret = process.env.CALCOM_WEBHOOK_SECRET ?? ""
-  const subscriberUrl = `${origin}/api/webhooks/calcom?slug=${encodeURIComponent(slug)}`
-
-  const webhookId = await createWebhook(
-    user.id,
-    eventTypeId,
-    subscriberUrl,
-    webhookSecret,
-  )
-
   let calcomUsername = creds?.calcom_username ?? null
   if (!calcomUsername) {
     try {
@@ -369,6 +327,24 @@ export async function selectEventType(formData: FormData) {
       // fall through; selected.bookingUrl is the backup
     }
   }
+
+  const slug = await ensureProfileSlug(admin, user.id, {
+    calcomUsername,
+    email: user.email,
+  })
+
+  const origin = await resolveSiteOrigin()
+  // Each host's webhook is registered with its own random secret so the
+  // handler can verify deliveries against that host alone, never a shared key.
+  const webhookSecret = randomBytes(32).toString("hex")
+  const subscriberUrl = `${origin}/api/webhooks/calcom?slug=${encodeURIComponent(slug)}`
+
+  const webhookId = await createWebhook(
+    user.id,
+    eventTypeId,
+    subscriberUrl,
+    webhookSecret,
+  )
 
   const bookingUrl =
     selected.bookingUrl ??
@@ -382,6 +358,7 @@ export async function selectEventType(formData: FormData) {
       selected_event_type_id: eventTypeId,
       selected_event_type_slug: selected.slug,
       webhook_id: webhookId,
+      webhook_secret_encrypted: webhookId ? encryptToken(webhookSecret) : null,
       calcom_username: calcomUsername,
       updated_at: new Date().toISOString(),
     },

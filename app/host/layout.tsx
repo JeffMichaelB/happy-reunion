@@ -1,6 +1,9 @@
+import { cookies, headers } from "next/headers"
 import { redirect } from "next/navigation"
 
 import { SidebarNav } from "@/components/sidebar-nav"
+import { isConnected } from "@/lib/calcom/api"
+import { ONBOARDING_SKIP_COOKIE } from "@/lib/calcom/onboarding"
 import { createClient } from "@/lib/supabase/server"
 
 export default async function HostLayout({
@@ -13,6 +16,19 @@ export default async function HostLayout({
     data: { user },
   } = await supabase.auth.getUser()
   if (!user) redirect("/login")
+
+  // Gate unconnected hosts toward onboarding. Skip the gate on the onboarding
+  // route itself (no redirect loop) and when the host chose "I'll do this
+  // later" (cookie set), in which case the dashboard shows a connect banner.
+  const requestHeaders = await headers()
+  const pathname = requestHeaders.get("x-pathname") ?? ""
+  if (!pathname.startsWith("/host/onboarding")) {
+    const cookieStore = await cookies()
+    const skipped = cookieStore.get(ONBOARDING_SKIP_COOKIE)?.value === "1"
+    if (!skipped && !(await isConnected(user.id))) {
+      redirect("/host/onboarding")
+    }
+  }
 
   return (
     <div className="flex min-h-svh flex-col md:flex-row">
