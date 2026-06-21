@@ -108,7 +108,7 @@ export default async function HostSettingsPage() {
   }
 
   const selectClass =
-    "border-input bg-background flex h-9 w-full rounded-md border px-3 py-1 text-sm outline-none transition-[color,box-shadow] focus-visible:border-transparent focus-visible:ring-2 focus-visible:ring-[rgba(59,130,246,0.5)] disabled:cursor-not-allowed disabled:opacity-50"
+    "border-input bg-background flex h-9 w-full rounded-md border px-3 py-1 text-sm outline-none transition-[color,box-shadow] focus-visible:border-transparent focus-visible:ring-2 focus-visible:ring-[rgba(28,28,28,0.35)] disabled:cursor-not-allowed disabled:opacity-50"
 
   return (
     <div className="space-y-10">
@@ -125,7 +125,7 @@ export default async function HostSettingsPage() {
         </h2>
         <Card>
           <CardHeader>
-            <CardTitle>Profile</CardTitle>
+            <CardTitle>Public profile</CardTitle>
             <CardDescription>
               How you and your show appear to guests.
             </CardDescription>
@@ -210,7 +210,7 @@ export default async function HostSettingsPage() {
         </h2>
         <Card>
           <CardHeader>
-            <CardTitle>Cal.com</CardTitle>
+            <CardTitle>Connection</CardTitle>
             <CardDescription>
               Connect your Cal.com account to manage scheduling directly from
               your dashboard. Guests book via your Cal.com link; bookings sync
@@ -347,7 +347,7 @@ export default async function HostSettingsPage() {
                   ) : (
                     <p className="text-xs text-muted-foreground">
                       Selecting an event type registers a webhook so bookings
-                      sync to your episode pipeline.
+                      sync to your Reunion pipeline.
                     </p>
                   )}
                   <Button type="submit" variant="secondary" size="sm">

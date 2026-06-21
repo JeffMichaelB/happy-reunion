@@ -45,11 +45,11 @@ export default async function HostCalendarPage() {
     <div>
       <h1 className="text-4xl font-semibold tracking-tight">Calendar</h1>
       <p className="mt-2 text-sm text-muted-foreground">
-        View your episode schedule.
+        View your Reunion schedule.
       </p>
 
       <div className="mt-10">
-        <CalendarScheduleView episodes={episodesForView} timezone="UTC" />
+        <CalendarScheduleView episodes={episodesForView} />
       </div>
     </div>
   )

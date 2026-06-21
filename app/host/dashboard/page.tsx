@@ -4,10 +4,10 @@ import { redirect } from "next/navigation"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent } from "@/components/ui/card"
 import { getEnvBookingUrl, isConnected } from "@/lib/calcom/api"
+import { displayTopic, formatUpcomingDate } from "@/lib/bookings/display"
 import { createClient } from "@/lib/supabase/server"
 
 import { BookingLinkBanner } from "./booking-link-banner"
-import { CopyLinkButton } from "./copy-link-button"
 
 const STATUS_CLASSES: Record<string, string> = {
   draft: "bg-[#f3f4f6] text-[#374151] border-[#d1d5db]",
@@ -118,34 +118,32 @@ export default async function DashboardPage() {
                     (ep.guests as { name: string } | null)?.name ??
                     ep.guest_name ??
                     "No guest"
+                  const topic = displayTopic(ep.topic)
                   return (
                     <Link key={ep.id} href={`/host/episodes/${ep.id}`}>
-                      <Card className="rounded-xl transition-colors hover:border-[rgba(28,28,28,0.4)]">
-                        <CardContent className="flex items-center justify-between py-4">
-                          <div>
+                      <Card
+                        size="sm"
+                        className="rounded-xl py-0 transition-colors hover:border-[rgba(28,28,28,0.4)]"
+                      >
+                        <CardContent className="space-y-2 py-4">
+                          <div className="flex items-center justify-between gap-3">
                             <p className="font-mono text-[13px] text-muted-foreground">
-                              {ep.starts_at
-                                ? new Date(ep.starts_at).toLocaleDateString(
-                                    "en-US",
-                                    {
-                                      month: "short",
-                                      day: "numeric",
-                                    },
-                                  )
-                                : "TBD"}
+                              {formatUpcomingDate(ep.starts_at)}
                             </p>
-                            <p className="text-sm font-medium">{guestName}</p>
-                            {ep.topic && (
-                              <p className="text-sm text-muted-foreground">
-                                &ldquo;{ep.topic}&rdquo;
-                              </p>
-                            )}
+                            <Badge
+                              className={`shrink-0 rounded-full border px-2.5 py-0.5 text-xs font-medium ${STATUS_CLASSES[ep.status] ?? ""}`}
+                            >
+                              {statusLabel(ep.status)}
+                            </Badge>
                           </div>
-                          <Badge
-                            className={`rounded-full border px-2.5 py-0.5 text-xs font-medium ${STATUS_CLASSES[ep.status] ?? ""}`}
-                          >
-                            {statusLabel(ep.status)}
-                          </Badge>
+                          <p className="text-base font-medium leading-snug">
+                            {guestName}
+                          </p>
+                          {topic ? (
+                            <p className="line-clamp-2 text-sm leading-relaxed text-muted-foreground">
+                              {topic}
+                            </p>
+                          ) : null}
                         </CardContent>
                       </Card>
                     </Link>
@@ -226,47 +224,6 @@ export default async function DashboardPage() {
                 </div>
               </CardContent>
             </Card>
-          </section>
-
-          <section>
-            <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
-              Booking Link
-            </p>
-            {calComUrl ? (
-              <Card className="mt-3 rounded-xl">
-                <CardContent className="space-y-3 py-5">
-                  <p className="break-all font-mono text-[13px]">
-                    {calComUrl}
-                  </p>
-                  <div className="flex flex-wrap gap-2">
-                    <CopyLinkButton link={calComUrl} />
-                    <a
-                      href={calComUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex h-8 items-center gap-1 rounded-md border border-[rgba(28,28,28,0.4)] bg-transparent px-3 text-sm font-medium transition-colors hover:bg-[rgba(28,28,28,0.04)]"
-                    >
-                      Open in Cal.com
-                    </a>
-                  </div>
-                </CardContent>
-              </Card>
-            ) : (
-              <Card className="mt-3 rounded-xl">
-                <CardContent className="py-5">
-                  <p className="text-sm text-muted-foreground">
-                    Set your Cal.com booking URL in{" "}
-                    <Link
-                      href="/host/settings"
-                      className="underline underline-offset-4"
-                    >
-                      Settings
-                    </Link>{" "}
-                    to enable your booking link.
-                  </p>
-                </CardContent>
-              </Card>
-            )}
           </section>
         </div>
       </div>

@@ -87,9 +87,11 @@ export function EmailPasswordForm({ mode }: EmailPasswordFormProps) {
           onChange={(e) => setEmail(e.target.value)}
         />
       </label>
-      <label className="flex flex-col gap-1.5 text-sm">
+      <div className="flex flex-col gap-1.5 text-sm">
         <div className="flex items-baseline justify-between">
-          <span className="font-medium text-foreground">Password</span>
+          <label htmlFor="password" className="font-medium text-foreground">
+            Password
+          </label>
           {mode === "signin" ? (
             <Link
               href="/login/reset"
@@ -100,6 +102,7 @@ export function EmailPasswordForm({ mode }: EmailPasswordFormProps) {
           ) : null}
         </div>
         <input
+          id="password"
           className={fieldClass}
           type="password"
           autoComplete={mode === "signup" ? "new-password" : "current-password"}
@@ -108,7 +111,7 @@ export function EmailPasswordForm({ mode }: EmailPasswordFormProps) {
           value={password}
           onChange={(e) => setPassword(e.target.value)}
         />
-      </label>
+      </div>
       {error ? <p className="text-destructive text-sm">{error}</p> : null}
       {notice ? <p className="text-muted-foreground text-sm">{notice}</p> : null}
       <Button type="submit" size="lg" disabled={pending} className="w-full">

@@ -1,7 +1,7 @@
 import Link from "next/link"
 import { redirect } from "next/navigation"
 
-import { Button, buttonVariants } from "@/components/ui/button"
+import { buttonVariants } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 import {
   Card,
@@ -54,16 +54,19 @@ export default async function GuestsPage() {
   }
 
   return (
-    <div className="space-y-8 bg-[#f7f4ed] -mx-8 -my-6 px-8 py-6 min-h-full text-[#1c1c1c]">
+    <div className="space-y-8">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <h1 className="text-4xl font-semibold tracking-tight">Guests</h1>
+          <p className="mt-2 text-sm text-muted-foreground">
+            Everyone you&rsquo;ve shared a Reunion with.
+          </p>
         </div>
         <Link
           href="/host/guests/new"
           className={cn(buttonVariants({ variant: "default" }))}
         >
-          Add Guest
+          Add guest
         </Link>
       </div>
 
@@ -91,7 +94,7 @@ export default async function GuestsPage() {
                         <span className="text-foreground font-medium">
                           {episodeCountByGuest.get(guest.id) ?? 0}
                         </span>{" "}
-                        episode
+                        Reunion
                         {(episodeCountByGuest.get(guest.id) ?? 0) === 1
                           ? ""
                           : "s"}

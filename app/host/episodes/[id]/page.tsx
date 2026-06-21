@@ -21,6 +21,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
+import { displayTopic } from "@/lib/bookings/display"
 import { isEmailConfigured } from "@/lib/email/resend"
 import type { Enums } from "@/lib/database.types"
 import { createClient } from "@/lib/supabase/server"
@@ -170,9 +171,11 @@ export default async function EpisodeDetailPage({ params, searchParams }: Props)
 
   const guestDisplayName = episode.guests?.name ?? episode.guest_name ?? "Guest"
   const guestEmail = episode.guests?.email ?? episode.guest_email
-  const mailSubject = episode.topic
-    ? `Podcast: ${episode.topic}`
-    : "Podcast recording"
+  const cleanTopic = displayTopic(episode.topic)
+  const episodeTitle = cleanTopic ?? `Reunion with ${guestDisplayName}`
+  const mailSubject = cleanTopic
+    ? `Reunion: ${cleanTopic}`
+    : "Your Reunion recording"
   const mailBody = [
     `Hi ${guestDisplayName},`,
     "",
@@ -188,16 +191,16 @@ export default async function EpisodeDetailPage({ params, searchParams }: Props)
             href="/host/episodes"
             className="text-sm text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
           >
-            ← Episodes
+            ← Reunions
           </Link>
           <h1 className="mt-2 text-4xl font-semibold tracking-tight">
-            {episode.topic ?? "Untitled episode"}
+            {episodeTitle}
           </h1>
           <p className="mt-2 font-mono text-[13px] text-muted-foreground">
             {formatRange(episode.starts_at, episode.ends_at)}
           </p>
         </div>
-        <span className={cn("shrink-0", statusBadgeClass(episode.status))}>
+        <span className={cn("shrink-0 self-start", statusBadgeClass(episode.status))}>
           {formatStatusLabel(episode.status)}
         </span>
       </div>
@@ -229,7 +232,7 @@ export default async function EpisodeDetailPage({ params, searchParams }: Props)
             <input type="hidden" name="id" value={episode.id} />
             <input type="hidden" name="status" value="cancelled" />
             <Button type="submit" variant="destructive">
-              Cancel episode
+              Cancel Reunion
             </Button>
           </form>
         )}
@@ -293,7 +296,7 @@ export default async function EpisodeDetailPage({ params, searchParams }: Props)
             <CardTitle className="text-base">Topic &amp; notes</CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
-            <p className="text-sm">{episode.topic ?? "—"}</p>
+            <p className="text-sm">{cleanTopic ?? "—"}</p>
             <p className="whitespace-pre-wrap text-sm text-muted-foreground">
               {episode.notes ?? "No notes."}
             </p>
@@ -376,7 +379,7 @@ export default async function EpisodeDetailPage({ params, searchParams }: Props)
               {(emailRows ?? []).length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={3} className="text-muted-foreground">
-                    No messages logged for this episode.
+                    No messages logged for this Reunion.
                   </TableCell>
                 </TableRow>
               ) : (
@@ -405,10 +408,10 @@ export default async function EpisodeDetailPage({ params, searchParams }: Props)
       <form action={deleteEpisode} className="flex items-center justify-between gap-4 rounded-lg border border-border p-4">
         <input type="hidden" name="id" value={episode.id} />
         <p className="text-sm text-muted-foreground">
-          Permanently delete this episode.
+          Permanently delete this Reunion.
         </p>
         <Button type="submit" variant="destructive">
-          Delete episode
+          Delete Reunion
         </Button>
       </form>
     </div>

@@ -122,7 +122,7 @@ export default function ManifestoPage() {
                   },
                   {
                     label: "Renewed relationships",
-                    body: "Reach out without ceremony. Fifty minutes that often turn into something lasting.",
+                    body: "Reach out without ceremony. One hour that often turns into something lasting.",
                   },
                   {
                     label: "Conversations worth keeping",

@@ -18,7 +18,6 @@ interface Episode {
 
 interface Props {
   episodes: Episode[]
-  timezone: string
 }
 
 const DAY_LABELS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
@@ -27,7 +26,16 @@ function statusLabel(s: string) {
   return s.replace("_", " ").replace(/\b\w/g, (c) => c.toUpperCase())
 }
 
-export function CalendarScheduleView({ episodes, timezone }: Props) {
+// Render in the viewer's local timezone so times match the dashboard and
+// episode pages (which also use local time).
+function formatChipTime(iso: string) {
+  return new Date(iso).toLocaleTimeString("en-US", {
+    hour: "numeric",
+    minute: "2-digit",
+  })
+}
+
+export function CalendarScheduleView({ episodes }: Props) {
   const [monthOffset, setMonthOffset] = useState(0)
 
   const { year, month, weeks, monthLabel } = useMemo(() => {
@@ -76,6 +84,18 @@ export function CalendarScheduleView({ episodes, timezone }: Props) {
     return map
   }, [episodes, year, month])
 
+  const monthEpisodes = useMemo(() => {
+    return episodes
+      .filter((ep) => {
+        const d = new Date(ep.starts_at)
+        return d.getFullYear() === year && d.getMonth() === month
+      })
+      .sort(
+        (a, b) =>
+          new Date(a.starts_at).getTime() - new Date(b.starts_at).getTime(),
+      )
+  }, [episodes, year, month])
+
   return (
     <div>
       <div className="flex items-center justify-between">
@@ -105,7 +125,46 @@ export function CalendarScheduleView({ episodes, timezone }: Props) {
         </div>
       </div>
 
-      <Card className="mt-4 overflow-hidden rounded-xl">
+      {/* Mobile: agenda list (the month grid is unreadable at phone widths) */}
+      <div className="mt-4 space-y-2 md:hidden">
+        {monthEpisodes.length === 0 ? (
+          <p className="rounded-xl border border-border bg-card p-4 text-sm text-muted-foreground">
+            No Reunions this month.
+          </p>
+        ) : (
+          monthEpisodes.map((ep) => (
+            <Link
+              key={ep.id}
+              href={`/host/episodes/${ep.id}`}
+              className="flex items-center gap-3 rounded-xl border border-border bg-card p-3 transition-colors hover:border-[rgba(28,28,28,0.4)]"
+            >
+              <div className="flex w-12 shrink-0 flex-col items-center">
+                <span className="text-lg font-semibold leading-none tracking-tight">
+                  {new Date(ep.starts_at).getDate()}
+                </span>
+                <span className="mt-0.5 text-[11px] uppercase tracking-wider text-muted-foreground">
+                  {new Date(ep.starts_at).toLocaleDateString("en-US", {
+                    weekday: "short",
+                  })}
+                </span>
+              </div>
+              <div className="min-w-0 flex-1">
+                <p className="truncate text-sm font-medium">{ep.guest_name}</p>
+                <p className="font-mono text-[12px] text-muted-foreground">
+                  {formatChipTime(ep.starts_at)}
+                </p>
+              </div>
+              <span
+                className={`shrink-0 rounded-full border px-2 py-0.5 text-[11px] font-medium ${ep.statusClass}`}
+              >
+                {statusLabel(ep.status)}
+              </span>
+            </Link>
+          ))
+        )}
+      </div>
+
+      <Card className="mt-4 hidden overflow-hidden rounded-xl md:block">
         <CardContent className="p-0">
           {/* Day headers */}
           <div className="grid grid-cols-7 border-b border-border">
@@ -156,14 +215,7 @@ export function CalendarScheduleView({ episodes, timezone }: Props) {
                               className={`block rounded px-1 py-0.5 text-[10px] font-medium leading-tight border ${ep.statusClass} truncate hover:opacity-80 transition-opacity`}
                               title={`${ep.guest_name}: ${ep.topic ?? "Recording"} (${statusLabel(ep.status)})`}
                             >
-                              {new Date(ep.starts_at).toLocaleTimeString(
-                                "en-US",
-                                {
-                                  hour: "numeric",
-                                  minute: "2-digit",
-                                  timeZone: timezone,
-                                },
-                              )}{" "}
+                              {formatChipTime(ep.starts_at)}{" "}
                               {ep.guest_name.split(" ")[0]}
                             </Link>
                           ))}
