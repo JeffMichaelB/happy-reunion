@@ -1,7 +1,7 @@
 import { cookies, headers } from "next/headers"
 import { redirect } from "next/navigation"
 
-import { SidebarNav } from "@/components/sidebar-nav"
+import { SidebarNav, SidebarNavSecondary } from "@/components/sidebar-nav"
 import { isConnected } from "@/lib/calcom/api"
 import { ONBOARDING_SKIP_COOKIE } from "@/lib/calcom/onboarding"
 import { createClient } from "@/lib/supabase/server"
@@ -33,16 +33,21 @@ export default async function HostLayout({
   return (
     <div className="flex min-h-svh flex-col md:flex-row">
       <aside className="flex flex-col border-b border-border bg-[#f3f0e8] p-4 md:w-64 md:shrink-0 md:border-b-0 md:border-r">
-        <div className="mb-6">
+        <div className="mb-4 md:mb-6">
           <p className="text-sm font-semibold tracking-tight">
             The <span className="font-normal italic">Reunion</span> Projects
           </p>
-          <p className="mt-1 font-mono text-[12px] text-muted-foreground">
+          <p className="mt-1 hidden font-mono text-[12px] text-muted-foreground md:block">
             {user.email}
           </p>
         </div>
 
-        <SidebarNav />
+        <div className="flex flex-1 flex-col">
+          <SidebarNav />
+          <div className="mt-3 md:mt-auto">
+            <SidebarNavSecondary />
+          </div>
+        </div>
       </aside>
 
       <main className="flex-1 px-8 py-6">

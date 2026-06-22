@@ -21,6 +21,7 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import { Textarea } from "@/components/ui/textarea"
+import { displayTopic } from "@/lib/bookings/display"
 import type { Database } from "@/lib/database.types"
 import { createClient } from "@/lib/supabase/server"
 
@@ -94,7 +95,7 @@ export default async function GuestDetailPage({
   const episodeRows = bookings ?? []
 
   return (
-    <div className="space-y-10 bg-[#f7f4ed] -mx-8 -my-6 px-8 py-6 min-h-full text-[#1c1c1c]">
+    <div className="space-y-10">
       <div>
         <Link
           href="/host/guests"
@@ -168,13 +169,13 @@ export default async function GuestDetailPage({
 
       <section className="space-y-3">
         <h2 className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
-          Episode history
+          Reunion history
         </h2>
         <Card className="rounded-xl border-border">
           <CardContent className="pt-6">
             {episodeRows.length === 0 ? (
               <p className="text-sm text-muted-foreground">
-                No episodes linked to this guest yet.
+                No Reunions linked to this guest yet.
               </p>
             ) : (
               <Table>
@@ -193,7 +194,7 @@ export default async function GuestDetailPage({
                         {formatEpisodeDate(row.starts_at)}
                       </TableCell>
                       <TableCell>
-                        {row.topic?.trim() ? row.topic : "—"}
+                        {displayTopic(row.topic) ?? "—"}
                       </TableCell>
                       <TableCell>
                         <Badge
@@ -233,7 +234,7 @@ export default async function GuestDetailPage({
         <Card className="max-w-xl rounded-xl border-border border-destructive/30">
           <CardContent className="pt-6">
             <p className="text-sm text-muted-foreground">
-              Permanently remove this guest from your directory. Episodes stay
+              Permanently remove this guest from your directory. Reunions stay
               in your account; the guest link on those bookings will be cleared
               if your database is set to set null on delete.
             </p>

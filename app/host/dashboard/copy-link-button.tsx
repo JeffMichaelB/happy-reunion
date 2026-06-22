@@ -10,11 +10,13 @@ export function CopyLinkButton({
   label = "Copy link",
   variant = "outline",
   size = "sm",
+  className,
 }: {
   link: string
   label?: string
   variant?: "default" | "outline" | "secondary" | "ghost"
   size?: "default" | "sm" | "lg" | "icon"
+  className?: string
 }) {
   const [copied, setCopied] = useState(false)
 
@@ -33,6 +35,7 @@ export function CopyLinkButton({
       type="button"
       variant={variant}
       size={size}
+      className={className}
       onClick={() => void copy()}
       aria-label={copied ? "Copied" : label}
     >

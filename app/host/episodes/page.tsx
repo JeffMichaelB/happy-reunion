@@ -16,6 +16,7 @@ import {
 } from "@/components/ui/table"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Textarea } from "@/components/ui/textarea"
+import { displayTopic } from "@/lib/bookings/display"
 import type { Enums } from "@/lib/database.types"
 import { createClient } from "@/lib/supabase/server"
 import { cn } from "@/lib/utils"
@@ -153,13 +154,13 @@ export default async function EpisodesPage() {
     <div className="space-y-8">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <h1 className="text-4xl font-semibold tracking-tight">Episodes</h1>
+          <h1 className="text-4xl font-semibold tracking-tight">Reunions</h1>
           <p className="mt-2 text-sm text-muted-foreground">
-            All podcast episodes — past, present, and future.
+            Every Reunion — past, present, and future.
           </p>
         </div>
         <Link href="#new-episode" className={cn(buttonVariants())}>
-          New Episode
+          New Reunion
         </Link>
       </div>
 
@@ -172,73 +173,115 @@ export default async function EpisodesPage() {
         <TabsContent value="list" className="mt-6">
           {episodes.length === 0 ? (
             <p className="px-1 py-8 text-sm text-muted-foreground">
-              No episodes yet. Create one below.
+              No Reunions yet. Create one below.
             </p>
           ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Date</TableHead>
-                  <TableHead>Guest</TableHead>
-                  <TableHead>Status</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {episodes.map((row) => (
-                  <TableRow key={row.id}>
-                    <TableCell className="font-mono text-[13px] text-muted-foreground">
-                      {formatEpisodeDate(row.starts_at)}
-                    </TableCell>
-                    <TableCell>
+            <>
+              {/* Mobile: stacked cards (the table hides Status behind a scroll) */}
+              <ul className="space-y-3 md:hidden">
+                {episodes.map((row) => {
+                  const topic = displayTopic(row.topic)
+                  return (
+                    <li key={row.id}>
                       <Link
                         href={`/host/episodes/${row.id}`}
-                        className="font-medium text-foreground underline-offset-4 hover:underline"
+                        className="block rounded-xl border border-border bg-card p-4 transition-colors hover:border-[rgba(28,28,28,0.4)]"
                       >
-                        {displayGuestName(row)}
+                        <div className="flex items-start justify-between gap-3">
+                          <span className="font-mono text-[13px] text-muted-foreground">
+                            {formatEpisodeDate(row.starts_at)}
+                          </span>
+                          <span className={statusBadgeClass(row.status)}>
+                            {formatStatusLabel(row.status)}
+                          </span>
+                        </div>
+                        <p className="mt-2 text-sm font-medium">
+                          {displayGuestName(row)}
+                        </p>
+                        {topic ? (
+                          <p className="mt-0.5 line-clamp-2 text-xs text-muted-foreground">
+                            {topic}
+                          </p>
+                        ) : null}
                       </Link>
-                    </TableCell>
-                    <TableCell>
-                      <span className={statusBadgeClass(row.status)}>
-                        {formatStatusLabel(row.status)}
-                      </span>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+                    </li>
+                  )
+                })}
+              </ul>
+
+              {/* Desktop: table */}
+              <div className="hidden md:block">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Date</TableHead>
+                      <TableHead>Guest</TableHead>
+                      <TableHead>Status</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {episodes.map((row) => (
+                      <TableRow key={row.id}>
+                        <TableCell className="font-mono text-[13px] text-muted-foreground">
+                          {formatEpisodeDate(row.starts_at)}
+                        </TableCell>
+                        <TableCell>
+                          <Link
+                            href={`/host/episodes/${row.id}`}
+                            className="font-medium text-foreground underline-offset-4 hover:underline"
+                          >
+                            {displayGuestName(row)}
+                          </Link>
+                        </TableCell>
+                        <TableCell>
+                          <span className={statusBadgeClass(row.status)}>
+                            {formatStatusLabel(row.status)}
+                          </span>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            </>
           )}
         </TabsContent>
 
         <TabsContent value="pipeline" className="mt-6 space-y-6">
           <div className="grid grid-cols-1 gap-4 md:grid-cols-5">
             {PIPELINE_STATUSES.map((status) => (
-              <div key={status} className="flex min-h-[280px] flex-col gap-3">
+              <div key={status} className="flex flex-col gap-3 md:min-h-[280px]">
                 <h2 className="text-sm font-semibold tracking-tight">
                   {PIPELINE_LABELS[status]}
                 </h2>
                 <div className="flex flex-1 flex-col gap-2 rounded-xl border border-border bg-background p-2">
                   {byPipelineColumn(status).length === 0 ? (
                     <p className="p-2 text-xs text-muted-foreground">
-                      No episodes
+                      No Reunions
                     </p>
                   ) : (
-                    byPipelineColumn(status).map((row) => (
-                      <Link
-                        key={row.id}
-                        href={`/host/episodes/${row.id}`}
-                        className="block rounded-md border border-border bg-background p-3 transition-colors hover:border-[rgba(28,28,28,0.4)]"
-                      >
-                        <p className="font-mono text-[13px] text-muted-foreground">
-                          {formatEpisodeDate(row.starts_at)}
-                        </p>
-                        <p className="mt-1 text-sm font-medium">
-                          {displayGuestName(row)}
-                        </p>
-                        <p className="mt-1 text-xs text-muted-foreground">
-                          {truncate(row.topic, 72)}
-                        </p>
-                      </Link>
-                    ))
+                    byPipelineColumn(status).map((row) => {
+                      const topic = displayTopic(row.topic)
+                      return (
+                        <Link
+                          key={row.id}
+                          href={`/host/episodes/${row.id}`}
+                          className="block rounded-md border border-border bg-background p-3 transition-colors hover:border-[rgba(28,28,28,0.4)]"
+                        >
+                          <p className="font-mono text-[13px] text-muted-foreground">
+                            {formatEpisodeDate(row.starts_at)}
+                          </p>
+                          <p className="mt-1 text-sm font-medium">
+                            {displayGuestName(row)}
+                          </p>
+                          {topic ? (
+                            <p className="mt-1 text-xs text-muted-foreground">
+                              {truncate(topic, 72)}
+                            </p>
+                          ) : null}
+                        </Link>
+                      )
+                    })
                   )}
                 </div>
               </div>
@@ -278,7 +321,7 @@ export default async function EpisodesPage() {
 
       <Card id="new-episode" className="scroll-mt-8">
         <CardHeader>
-          <CardTitle className="text-base">Create episode</CardTitle>
+          <CardTitle className="text-base">Create Reunion</CardTitle>
         </CardHeader>
         <CardContent>
           <form action={createEpisode} className="grid max-w-xl gap-4">
@@ -307,7 +350,7 @@ export default async function EpisodesPage() {
               <select
                 id="guest_id"
                 name="guest_id"
-                className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm outline-none transition-[color,box-shadow] focus-visible:border-transparent focus-visible:ring-2 focus-visible:ring-[rgba(59,130,246,0.5)] disabled:cursor-not-allowed disabled:opacity-50"
+                className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm outline-none transition-[color,box-shadow] focus-visible:border-transparent focus-visible:ring-2 focus-visible:ring-[rgba(28,28,28,0.35)] disabled:cursor-not-allowed disabled:opacity-50"
               >
                 <option value="">— None —</option>
                 {(guestList ?? []).map((g) => (

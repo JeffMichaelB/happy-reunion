@@ -113,9 +113,15 @@ export function MarketingNav() {
             })}
           </ol>
 
-          <div className="hidden items-center gap-3 md:flex">
-            <Link href="/login" className={PRIMARY_BUTTON_CLASS}>
-              Host Login
+          <div className="hidden items-center gap-5 md:flex">
+            <Link
+              href="/login"
+              className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+            >
+              Host login
+            </Link>
+            <Link href="/signup" className={PRIMARY_BUTTON_CLASS}>
+              Host a Reunion
               <ArrowUpRight className="size-3.5" weight="bold" />
             </Link>
           </div>
@@ -196,16 +202,23 @@ export function MarketingNav() {
           </ol>
 
           <div className="mt-auto pb-10">
-            <div className="border-t border-border pt-8">
+            <div className="flex flex-col gap-4 border-t border-border pt-8">
               <Link
-                href="/login"
+                href="/signup"
                 onClick={() => setMobileMenuOpen(false)}
                 className="inline-flex h-12 items-center gap-2 rounded-md bg-primary px-5 text-sm font-medium text-primary-foreground shadow-[rgba(255,255,255,0.2)_0px_0.5px_0px_0px_inset,rgba(0,0,0,0.2)_0px_0px_0px_0.5px_inset,rgba(0,0,0,0.05)_0px_1px_2px_0px] transition-all hover:opacity-85 active:translate-y-px"
               >
-                Host Login
+                Host a Reunion
                 <ArrowUpRight className="size-4" weight="bold" />
               </Link>
-              <p className="mt-6 font-mono text-[11px] uppercase tracking-[0.16em] text-muted-foreground">
+              <Link
+                href="/login"
+                onClick={() => setMobileMenuOpen(false)}
+                className="text-sm font-medium text-muted-foreground underline-offset-4 transition-colors hover:text-foreground hover:underline"
+              >
+                Already a host? Log in
+              </Link>
+              <p className="mt-2 font-mono text-[11px] uppercase tracking-[0.16em] text-muted-foreground">
                 A Reunion Projects platform · Currently in private beta
               </p>
             </div>

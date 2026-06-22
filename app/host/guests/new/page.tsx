@@ -23,7 +23,7 @@ export default async function NewGuestPage() {
   if (!user) redirect("/login")
 
   return (
-    <div className="space-y-6 bg-[#f7f4ed] -mx-8 -my-6 px-8 py-6 min-h-full text-[#1c1c1c]">
+    <div className="space-y-6">
       <div>
         <Link
           href="/host/guests"
