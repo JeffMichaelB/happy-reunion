@@ -3,7 +3,12 @@
 import { useRouter } from "next/navigation"
 import { useEffect, useRef } from "react"
 
-import { authDestinationForType } from "@/lib/auth/destinations"
+import {
+  HOST_PASSWORD_RECOVERY_DESTINATION,
+  authDestinationForEvent,
+  authDestinationForType,
+  isPasswordRecoveryType,
+} from "@/lib/auth/destinations"
 import { createClient } from "@/lib/supabase/client"
 
 /**
@@ -36,13 +41,20 @@ export function AuthSessionHandler() {
         event === "INITIAL_SESSION"
       ) {
         handled.current = true
-        router.replace(authDestinationForType(type))
+        const destination = authDestinationForEvent(event, type)
+        if (destination === HOST_PASSWORD_RECOVERY_DESTINATION) {
+          window.sessionStorage.setItem("host-password-recovery", "1")
+        }
+        router.replace(destination)
       }
     })
 
     void supabase.auth.getSession().then(({ data: { session } }) => {
       if (handled.current || !session) return
       handled.current = true
+      if (isPasswordRecoveryType(type)) {
+        window.sessionStorage.setItem("host-password-recovery", "1")
+      }
       router.replace(authDestinationForType(type))
     })
 

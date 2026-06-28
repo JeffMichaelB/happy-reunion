@@ -2,10 +2,13 @@ import { NextResponse } from "next/server"
 import { createServerClient } from "@supabase/ssr"
 import { cookies } from "next/headers"
 
+import { authDestinationForType } from "@/lib/auth/destinations"
+
 export async function GET(request: Request) {
   const url = new URL(request.url)
   const code = url.searchParams.get("code")
-  const next = url.searchParams.get("next") ?? "/host/dashboard"
+  const type = url.searchParams.get("type")
+  const next = url.searchParams.get("next") ?? authDestinationForType(type)
   const origin = url.origin
 
   const response = NextResponse.redirect(`${origin}${next}`)
@@ -26,11 +29,11 @@ export async function GET(request: Request) {
         },
         setAll(cookiesToSet) {
           cookiesToSet.forEach(({ name, value, options }) =>
-            response.cookies.set(name, value, options),
+            response.cookies.set(name, value, options)
           )
         },
       },
-    },
+    }
   )
 
   const { error } = await supabase.auth.exchangeCodeForSession(code)
