@@ -4,7 +4,12 @@ import { NextResponse } from "next/server"
 
 import {
   type CalBooking,
+  notifyGuestOfBooking,
+  notifyGuestOfBookingCancelled,
+  notifyGuestOfBookingRescheduled,
   notifyHostOfBooking,
+  notifyHostOfBookingCancelled,
+  notifyHostOfBookingRescheduled,
   syncBookingCancelled,
   syncBookingCreated,
   syncBookingRescheduled,
@@ -12,12 +17,16 @@ import {
 import { decryptToken } from "@/lib/crypto/tokens"
 import { createAdminClient } from "@/lib/supabase/admin"
 
-function signatureMatches(payload: string, secret: string, signature: string): boolean {
+function signatureMatches(
+  payload: string,
+  secret: string,
+  signature: string
+): boolean {
   const expected = createHmac("sha256", secret).update(payload).digest("hex")
   try {
     return timingSafeEqual(
       Buffer.from(signature, "utf8"),
-      Buffer.from(expected, "utf8"),
+      Buffer.from(expected, "utf8")
     )
   } catch {
     return false
@@ -102,20 +111,49 @@ export async function POST(request: Request) {
 
   switch (event.triggerEvent) {
     case "BOOKING_CREATED": {
-      const created = await syncBookingCreated(admin, hostId, booking)
-      if (created) {
-        await notifyHostOfBooking(admin, hostId, booking)
+      const result = await syncBookingCreated(admin, hostId, booking)
+      if (result.created) {
+        await notifyHostOfBooking(admin, hostId, booking, result.bookingId)
+        await notifyGuestOfBooking(admin, hostId, booking, result.bookingId)
       }
       break
     }
 
     case "BOOKING_RESCHEDULED": {
-      await syncBookingRescheduled(admin, hostId, booking)
+      const result = await syncBookingRescheduled(admin, hostId, booking)
+      if (result.bookingId) {
+        await notifyHostOfBookingRescheduled(
+          admin,
+          hostId,
+          booking,
+          result.bookingId
+        )
+        await notifyGuestOfBookingRescheduled(
+          admin,
+          hostId,
+          booking,
+          result.bookingId
+        )
+      }
       break
     }
 
     case "BOOKING_CANCELLED": {
-      await syncBookingCancelled(admin, hostId, booking.uid)
+      const result = await syncBookingCancelled(admin, hostId, booking.uid)
+      if (result.bookingId) {
+        await notifyHostOfBookingCancelled(
+          admin,
+          hostId,
+          booking,
+          result.bookingId
+        )
+        await notifyGuestOfBookingCancelled(
+          admin,
+          hostId,
+          booking,
+          result.bookingId
+        )
+      }
       break
     }
 

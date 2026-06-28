@@ -1,12 +1,21 @@
 "use client"
 
+import { useMemo, useState } from "react"
 import { useFormStatus } from "react-dom"
 
 import { sendEpisodeEmail } from "@/app/host/episodes/actions"
 import { Button, buttonVariants } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 import { Textarea } from "@/components/ui/textarea"
+import type { EmailPreset } from "@/lib/email/templates"
 import { cn } from "@/lib/utils"
 
 function SubmitButton({ disabled }: { disabled: boolean }) {
@@ -21,31 +30,87 @@ function SubmitButton({ disabled }: { disabled: boolean }) {
 export function SendEmailForm({
   episodeId,
   to,
-  defaultSubject,
-  defaultBody,
-  gmailUrl,
+  presets,
   emailConfigured,
 }: {
   episodeId: string
   to: string
-  defaultSubject: string
-  defaultBody: string
-  gmailUrl: string
+  presets: EmailPreset[]
   emailConfigured: boolean
 }) {
+  const initialPreset = presets[0]
+  const [selectedPresetId, setSelectedPresetId] = useState(
+    initialPreset?.id ?? ""
+  )
+  const [subject, setSubject] = useState(initialPreset?.subject ?? "")
+  const [body, setBody] = useState(initialPreset?.body ?? "")
+
+  const selectedPreset = presets.find(
+    (preset) => preset.id === selectedPresetId
+  )
+  const gmailUrl = useMemo(() => {
+    const p = new URLSearchParams({
+      view: "cm",
+      fs: "1",
+      to,
+      su: subject,
+      body,
+    })
+    return `https://mail.google.com/mail/?${p.toString()}`
+  }, [body, subject, to])
+
+  function selectPreset(id: string) {
+    const preset = presets.find((candidate) => candidate.id === id)
+    if (!preset) return
+    setSelectedPresetId(preset.id)
+    setSubject(preset.subject)
+    setBody(preset.body)
+  }
+
   return (
     <form action={sendEpisodeEmail} className="space-y-4">
       <input type="hidden" name="id" value={episodeId} />
       <input type="hidden" name="to" value={to} />
 
       <div className="grid gap-2">
+        <Label htmlFor="email-preset">Template</Label>
+        <Select value={selectedPresetId} onValueChange={selectPreset}>
+          <SelectTrigger id="email-preset" className="w-full sm:w-80">
+            <SelectValue placeholder="Choose a template" />
+          </SelectTrigger>
+          <SelectContent>
+            {presets.map((preset) => (
+              <SelectItem key={preset.id} value={preset.id}>
+                {preset.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        {selectedPreset ? (
+          <p className="text-xs text-muted-foreground">
+            {selectedPreset.description}
+          </p>
+        ) : null}
+      </div>
+
+      <div className="grid gap-2">
         <Label htmlFor="email-to">To</Label>
-        <Input id="email-to" value={to} readOnly className="font-mono text-[13px]" />
+        <Input
+          id="email-to"
+          value={to}
+          readOnly
+          className="font-mono text-[13px]"
+        />
       </div>
 
       <div className="grid gap-2">
         <Label htmlFor="email-subject">Subject</Label>
-        <Input id="email-subject" name="subject" defaultValue={defaultSubject} />
+        <Input
+          id="email-subject"
+          name="subject"
+          value={subject}
+          onChange={(event) => setSubject(event.target.value)}
+        />
       </div>
 
       <div className="grid gap-2">
@@ -53,7 +118,8 @@ export function SendEmailForm({
         <Textarea
           id="email-body"
           name="body"
-          defaultValue={defaultBody}
+          value={body}
+          onChange={(event) => setBody(event.target.value)}
           className="min-h-40"
         />
       </div>

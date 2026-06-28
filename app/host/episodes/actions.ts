@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache"
 import { redirect } from "next/navigation"
 
 import { cancelBooking, rescheduleBooking } from "@/lib/calcom/api"
+import { logEmailSend } from "@/lib/email/audit"
 import { EmailNotConfiguredError, sendEmail } from "@/lib/email/resend"
 import { findOrCreateGuestId } from "@/lib/guests/link"
 import type { Enums } from "@/lib/database.types"
@@ -21,7 +22,9 @@ function parseOptionalString(value: FormDataEntryValue | null): string | null {
   return s.length > 0 ? s : null
 }
 
-function parseOptionalIsoDatetime(value: FormDataEntryValue | null): string | null {
+function parseOptionalIsoDatetime(
+  value: FormDataEntryValue | null
+): string | null {
   const s = typeof value === "string" ? value.trim() : ""
   if (!s) return null
   const d = new Date(s)
@@ -258,12 +261,14 @@ export async function sendEpisodeEmail(formData: FormData) {
     redirect(`/host/episodes/${id}?error=email_failed`)
   }
 
-  const { error: logError } = await supabase.from("email_sends").insert({
-    host_id: user.id,
-    episode_id: id,
-    recipient_email: to,
+  const { error: logError } = await logEmailSend(supabase, {
+    hostId: user.id,
+    episodeId: id,
+    recipientEmail: to,
     subject,
-    gmail_message_id: messageId,
+    body,
+    purpose: "manual",
+    providerMessageId: messageId,
   })
 
   if (logError) {
@@ -297,7 +302,8 @@ export async function cancelEpisodeViaCal(formData: FormData) {
     redirect(`/host/episodes/${id}?error=no_calcom_uid`)
   }
 
-  const reason = (formData.get("reason") as string)?.trim() || "Cancelled by host"
+  const reason =
+    (formData.get("reason") as string)?.trim() || "Cancelled by host"
 
   const ok = await cancelBooking(user.id, booking.cal_com_booking_uid, reason)
   if (!ok) {
@@ -341,14 +347,15 @@ export async function rescheduleEpisodeViaCal(formData: FormData) {
     redirect(`/host/episodes/${id}?error=no_calcom_uid`)
   }
 
-  const reason = (formData.get("reason") as string)?.trim() || "Rescheduled by host"
+  const reason =
+    (formData.get("reason") as string)?.trim() || "Rescheduled by host"
   const startIso = new Date(newStart).toISOString()
 
   const ok = await rescheduleBooking(
     user.id,
     booking.cal_com_booking_uid,
     startIso,
-    reason,
+    reason
   )
   if (!ok) {
     redirect(`/host/episodes/${id}?error=reschedule_failed`)
