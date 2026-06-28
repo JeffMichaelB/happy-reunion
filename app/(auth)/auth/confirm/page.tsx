@@ -5,7 +5,12 @@ import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { useEffect, useRef, useState } from "react"
 
-import { authDestinationForType } from "@/lib/auth/destinations"
+import {
+  HOST_PASSWORD_RECOVERY_DESTINATION,
+  authDestinationForEvent,
+  authDestinationForType,
+  isPasswordRecoveryType,
+} from "@/lib/auth/destinations"
 import { createClient } from "@/lib/supabase/client"
 
 export default function AuthConfirmPage() {
@@ -26,15 +31,19 @@ export default function AuthConfirmPage() {
         setError(errMsg ?? "Could not confirm sign-in.")
         return
       }
+      if (dest === HOST_PASSWORD_RECOVERY_DESTINATION) {
+        window.sessionStorage.setItem("host-password-recovery", "1")
+      }
       router.replace(dest)
     }
 
     if (token_hash && type) {
       void supabase.auth
         .verifyOtp({ token_hash, type })
-        .then(({ error: e }) =>
-          finish(!e, e?.message ?? null, authDestinationForType(type)),
-        )
+        .then(({ error: e }) => {
+          const destination = authDestinationForType(type)
+          finish(!e, e?.message ?? null, destination)
+        })
       return
     }
 
@@ -53,7 +62,7 @@ export default function AuthConfirmPage() {
           event === "TOKEN_REFRESHED" ||
           event === "INITIAL_SESSION")
       ) {
-        finish(true, null, authDestinationForType(hashType ?? type))
+        finish(true, null, authDestinationForEvent(event, hashType ?? type))
       }
     })
 
@@ -63,6 +72,9 @@ export default function AuthConfirmPage() {
         return
       }
       if (session) {
+        if (isPasswordRecoveryType(hashType ?? type)) {
+          window.sessionStorage.setItem("host-password-recovery", "1")
+        }
         finish(true, null, authDestinationForType(hashType ?? type))
       }
     })
@@ -104,7 +116,5 @@ export default function AuthConfirmPage() {
     )
   }
 
-  return (
-    <p className="text-sm text-muted-foreground">Confirming sign-in…</p>
-  )
+  return <p className="text-sm text-muted-foreground">Confirming sign-in…</p>
 }

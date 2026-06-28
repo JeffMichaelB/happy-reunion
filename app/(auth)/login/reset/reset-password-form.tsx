@@ -28,17 +28,18 @@ export function ResetPasswordForm() {
     setError(null)
     setPending(true)
     const supabase = createClient()
+    const normalizedEmail = email.trim()
     const redirectTo = `${authRedirectOrigin()}/auth/confirm`
     const { error: resetError } = await supabase.auth.resetPasswordForEmail(
-      email,
-      { redirectTo },
+      normalizedEmail,
+      { redirectTo }
     )
     setPending(false)
     if (resetError) {
       setError(resetError.message)
       return
     }
-    setSubmittedEmail(email)
+    setSubmittedEmail(normalizedEmail)
   }
 
   if (submittedEmail) {
@@ -50,7 +51,9 @@ export function ResetPasswordForm() {
           </h1>
           <p className="text-sm text-muted-foreground">
             If{" "}
-            <span className="font-medium text-foreground">{submittedEmail}</span>{" "}
+            <span className="font-medium text-foreground">
+              {submittedEmail}
+            </span>{" "}
             is on file, a reset link is on its way. Links expire in a few
             minutes.
           </p>
@@ -74,7 +77,8 @@ export function ResetPasswordForm() {
           Reset your password
         </h1>
         <p className="text-sm text-muted-foreground">
-          Enter the email on your account and we&rsquo;ll send a reset link.
+          Enter the email on your host account and we&rsquo;ll send a reset
+          link.
         </p>
       </div>
 
@@ -90,7 +94,7 @@ export function ResetPasswordForm() {
             onChange={(e) => setEmail(e.target.value)}
           />
         </label>
-        {error ? <p className="text-destructive text-sm">{error}</p> : null}
+        {error ? <p className="text-sm text-destructive">{error}</p> : null}
         <Button type="submit" size="lg" disabled={pending} className="w-full">
           {pending ? "Sending…" : "Send reset link"}
         </Button>
