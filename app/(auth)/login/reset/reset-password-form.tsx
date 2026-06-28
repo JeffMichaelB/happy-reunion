@@ -29,7 +29,7 @@ export function ResetPasswordForm() {
     setPending(true)
     const supabase = createClient()
     const normalizedEmail = email.trim()
-    const redirectTo = `${authRedirectOrigin()}/auth/confirm`
+    const redirectTo = `${authRedirectOrigin()}/auth/recovery`
     const { error: resetError } = await supabase.auth.resetPasswordForEmail(
       normalizedEmail,
       { redirectTo }
