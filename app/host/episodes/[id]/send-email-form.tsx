@@ -59,7 +59,8 @@ export function SendEmailForm({
     return `https://mail.google.com/mail/?${p.toString()}`
   }, [body, subject, to])
 
-  function selectPreset(id: string) {
+  function selectPreset(id: EmailPreset["id"] | null) {
+    if (!id) return
     const preset = presets.find((candidate) => candidate.id === id)
     if (!preset) return
     setSelectedPresetId(preset.id)
