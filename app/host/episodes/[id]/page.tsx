@@ -23,6 +23,7 @@ import {
 } from "@/components/ui/table"
 import { displayTopic } from "@/lib/bookings/display"
 import { isEmailConfigured } from "@/lib/email/resend"
+import { buildEpisodeEmailPresets } from "@/lib/email/templates"
 import type { Enums } from "@/lib/database.types"
 import { createClient } from "@/lib/supabase/server"
 import { cn } from "@/lib/utils"
@@ -56,35 +57,17 @@ function statusBadgeClass(status: BookingStatus): string {
   switch (status) {
     case "draft":
     case "completed":
-      return cn(
-        base,
-        "bg-[#f3f4f6] text-[#374151] border-[#d1d5db]",
-      )
+      return cn(base, "border-[#d1d5db] bg-[#f3f4f6] text-[#374151]")
     case "pending_guest":
-      return cn(
-        base,
-        "bg-[#fef3c7] text-[#92400e] border-[#fcd34d]",
-      )
+      return cn(base, "border-[#fcd34d] bg-[#fef3c7] text-[#92400e]")
     case "confirmed":
-      return cn(
-        base,
-        "bg-[#dcfce7] text-[#166534] border-[#86efac]",
-      )
+      return cn(base, "border-[#86efac] bg-[#dcfce7] text-[#166534]")
     case "recorded":
-      return cn(
-        base,
-        "bg-[#dbeafe] text-[#1e40af] border-[#93c5fd]",
-      )
+      return cn(base, "border-[#93c5fd] bg-[#dbeafe] text-[#1e40af]")
     case "published":
-      return cn(
-        base,
-        "bg-[#f3e8ff] text-[#6b21a8] border-[#c4b5fd]",
-      )
+      return cn(base, "border-[#c4b5fd] bg-[#f3e8ff] text-[#6b21a8]")
     case "cancelled":
-      return cn(
-        base,
-        "bg-[#fee2e2] text-[#991b1b] border-[#fca5a5]",
-      )
+      return cn(base, "border-[#fca5a5] bg-[#fee2e2] text-[#991b1b]")
   }
 }
 
@@ -112,17 +95,6 @@ function formatRange(starts: string | null, ends: string | null): string {
   return `${startStr} – ${endStr}`
 }
 
-function gmailComposeUrl(to: string, subject: string, body: string): string {
-  const p = new URLSearchParams({
-    view: "cm",
-    fs: "1",
-    to,
-    su: subject,
-    body,
-  })
-  return `https://mail.google.com/mail/?${p.toString()}`
-}
-
 const ERROR_MESSAGES: Record<string, string> = {
   email_not_configured:
     "Email isn't configured. Add RESEND_API_KEY to send from here, or use Gmail.",
@@ -139,7 +111,10 @@ interface Props {
   searchParams: Promise<{ error?: string; sent?: string }>
 }
 
-export default async function EpisodeDetailPage({ params, searchParams }: Props) {
+export default async function EpisodeDetailPage({
+  params,
+  searchParams,
+}: Props) {
   const { id } = await params
   const q = await searchParams
 
@@ -152,7 +127,7 @@ export default async function EpisodeDetailPage({ params, searchParams }: Props)
   const { data: raw } = await supabase
     .from("bookings")
     .select(
-      "id, host_id, guest_id, guest_email, guest_name, starts_at, ends_at, topic, notes, status, riverside_url, cal_com_booking_uid, created_at, updated_at, guests ( id, name, email )",
+      "id, host_id, guest_id, guest_email, guest_name, starts_at, ends_at, topic, notes, status, riverside_url, cal_com_booking_uid, created_at, updated_at, guests ( id, name, email )"
     )
     .eq("id", id)
     .eq("host_id", user.id)
@@ -164,7 +139,7 @@ export default async function EpisodeDetailPage({ params, searchParams }: Props)
 
   const { data: emailRows } = await supabase
     .from("email_sends")
-    .select("id, recipient_email, subject, sent_at")
+    .select("id, recipient_email, subject, purpose, sent_at")
     .eq("host_id", user.id)
     .eq("episode_id", id)
     .order("sent_at", { ascending: false })
@@ -173,14 +148,14 @@ export default async function EpisodeDetailPage({ params, searchParams }: Props)
   const guestEmail = episode.guests?.email ?? episode.guest_email
   const cleanTopic = displayTopic(episode.topic)
   const episodeTitle = cleanTopic ?? `Reunion with ${guestDisplayName}`
-  const mailSubject = cleanTopic
-    ? `Reunion: ${cleanTopic}`
-    : "Your Reunion recording"
-  const mailBody = [
-    `Hi ${guestDisplayName},`,
-    "",
-    episode.notes ?? "",
-  ].join("\n")
+  const emailPresets = buildEpisodeEmailPresets({
+    guestName: guestDisplayName,
+    topic: cleanTopic,
+    notes: episode.notes,
+    startsAt: episode.starts_at,
+    endsAt: episode.ends_at,
+    riversideUrl: episode.riverside_url,
+  })
   const emailConfigured = isEmailConfigured()
 
   return (
@@ -200,14 +175,20 @@ export default async function EpisodeDetailPage({ params, searchParams }: Props)
             {formatRange(episode.starts_at, episode.ends_at)}
           </p>
         </div>
-        <span className={cn("shrink-0 self-start", statusBadgeClass(episode.status))}>
+        <span
+          className={cn(
+            "shrink-0 self-start",
+            statusBadgeClass(episode.status)
+          )}
+        >
           {formatStatusLabel(episode.status)}
         </span>
       </div>
 
       {q.error ? (
         <p className="rounded-md border border-destructive/30 bg-destructive/5 px-3 py-2 text-sm text-destructive">
-          {ERROR_MESSAGES[q.error] ?? `Something went wrong (${q.error}). Try again.`}
+          {ERROR_MESSAGES[q.error] ??
+            `Something went wrong (${q.error}). Try again.`}
         </p>
       ) : null}
 
@@ -244,15 +225,14 @@ export default async function EpisodeDetailPage({ params, searchParams }: Props)
             <CardTitle className="text-base">Reschedule</CardTitle>
           </CardHeader>
           <CardContent>
-            <form action={rescheduleEpisodeViaCal} className="flex max-w-md flex-col gap-3 sm:flex-row sm:items-end">
+            <form
+              action={rescheduleEpisodeViaCal}
+              className="flex max-w-md flex-col gap-3 sm:flex-row sm:items-end"
+            >
               <input type="hidden" name="id" value={episode.id} />
               <div className="grid flex-1 gap-2">
                 <Label htmlFor="new_start">New date &amp; time</Label>
-                <Input
-                  id="new_start"
-                  name="new_start"
-                  type="datetime-local"
-                />
+                <Input id="new_start" name="new_start" type="datetime-local" />
               </div>
               <Button type="submit" variant="secondary">
                 Reschedule via Cal.com
@@ -297,7 +277,7 @@ export default async function EpisodeDetailPage({ params, searchParams }: Props)
           </CardHeader>
           <CardContent className="space-y-3">
             <p className="text-sm">{cleanTopic ?? "—"}</p>
-            <p className="whitespace-pre-wrap text-sm text-muted-foreground">
+            <p className="text-sm whitespace-pre-wrap text-muted-foreground">
               {episode.notes ?? "No notes."}
             </p>
           </CardContent>
@@ -314,12 +294,15 @@ export default async function EpisodeDetailPage({ params, searchParams }: Props)
               href={episode.riverside_url}
               target="_blank"
               rel="noopener noreferrer"
-              className="mb-4 block font-mono text-[13px] text-primary underline-offset-4 hover:underline break-all"
+              className="mb-4 block font-mono text-[13px] break-all text-primary underline-offset-4 hover:underline"
             >
               {episode.riverside_url}
             </a>
           ) : null}
-          <form action={updateEpisode} className="flex max-w-xl flex-col gap-3 sm:flex-row sm:items-end">
+          <form
+            action={updateEpisode}
+            className="flex max-w-xl flex-col gap-3 sm:flex-row sm:items-end"
+          >
             <input type="hidden" name="id" value={episode.id} />
             <input type="hidden" name="partial" value="riverside" />
             <div className="grid flex-1 gap-2">
@@ -354,9 +337,7 @@ export default async function EpisodeDetailPage({ params, searchParams }: Props)
           <SendEmailForm
             episodeId={episode.id}
             to={guestEmail}
-            defaultSubject={mailSubject}
-            defaultBody={mailBody}
-            gmailUrl={gmailComposeUrl(guestEmail, mailSubject, mailBody)}
+            presets={emailPresets}
             emailConfigured={emailConfigured}
           />
         </CardContent>
@@ -372,13 +353,14 @@ export default async function EpisodeDetailPage({ params, searchParams }: Props)
               <TableRow>
                 <TableHead>Sent</TableHead>
                 <TableHead>To</TableHead>
+                <TableHead>Purpose</TableHead>
                 <TableHead>Subject</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {(emailRows ?? []).length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={3} className="text-muted-foreground">
+                  <TableCell colSpan={4} className="text-muted-foreground">
                     No messages logged for this Reunion.
                   </TableCell>
                 </TableRow>
@@ -394,6 +376,9 @@ export default async function EpisodeDetailPage({ params, searchParams }: Props)
                     <TableCell className="font-mono text-[13px] break-all">
                       {row.recipient_email}
                     </TableCell>
+                    <TableCell className="text-sm text-muted-foreground">
+                      {row.purpose.replaceAll("_", " ")}
+                    </TableCell>
                     <TableCell>{row.subject}</TableCell>
                   </TableRow>
                 ))
@@ -405,7 +390,10 @@ export default async function EpisodeDetailPage({ params, searchParams }: Props)
 
       <Separator />
 
-      <form action={deleteEpisode} className="flex items-center justify-between gap-4 rounded-lg border border-border p-4">
+      <form
+        action={deleteEpisode}
+        className="flex items-center justify-between gap-4 rounded-lg border border-border p-4"
+      >
         <input type="hidden" name="id" value={episode.id} />
         <p className="text-sm text-muted-foreground">
           Permanently delete this Reunion.

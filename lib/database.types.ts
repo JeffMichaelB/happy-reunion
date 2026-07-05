@@ -75,28 +75,40 @@ export type Database = {
       }
       email_sends: {
         Row: {
+          body_hash: string | null
+          body_preview: string | null
           episode_id: string | null
           gmail_message_id: string | null
           host_id: string
           id: string
+          provider_message_id: string | null
+          purpose: string
           recipient_email: string
           sent_at: string
           subject: string
         }
         Insert: {
+          body_hash?: string | null
+          body_preview?: string | null
           episode_id?: string | null
           gmail_message_id?: string | null
           host_id: string
           id?: string
+          provider_message_id?: string | null
+          purpose?: string
           recipient_email: string
           sent_at?: string
           subject: string
         }
         Update: {
+          body_hash?: string | null
+          body_preview?: string | null
           episode_id?: string | null
           gmail_message_id?: string | null
           host_id?: string
           id?: string
+          provider_message_id?: string | null
+          purpose?: string
           recipient_email?: string
           sent_at?: string
           subject?: string

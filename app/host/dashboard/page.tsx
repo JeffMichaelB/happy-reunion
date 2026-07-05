@@ -55,7 +55,7 @@ export default async function DashboardPage() {
         .eq("host_id", user.id),
       supabase
         .from("email_sends")
-        .select("id, recipient_email, subject, sent_at")
+        .select("id, recipient_email, subject, purpose, sent_at")
         .eq("host_id", user.id)
         .order("sent_at", { ascending: false })
         .limit(5),
@@ -69,10 +69,10 @@ export default async function DashboardPage() {
 
   const totalEpisodes = allEpisodes.length
   const pendingCount = allEpisodes.filter(
-    (e) => e.status === "pending_guest",
+    (e) => e.status === "pending_guest"
   ).length
   const upcomingCount = allEpisodes.filter((e) =>
-    ["confirmed", "pending_guest", "draft"].includes(e.status),
+    ["confirmed", "pending_guest", "draft"].includes(e.status)
   ).length
 
   const connected = await isConnected(user.id)
@@ -94,9 +94,9 @@ export default async function DashboardPage() {
 
       <div className="mt-8 grid gap-6 lg:grid-cols-3">
         {/* Upcoming Episodes */}
-        <div className="lg:col-span-2 space-y-6">
+        <div className="space-y-6 lg:col-span-2">
           <section>
-            <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+            <p className="text-xs font-medium tracking-wider text-muted-foreground uppercase">
               Upcoming Episodes
             </p>
             <div className="mt-3 space-y-3">
@@ -136,7 +136,7 @@ export default async function DashboardPage() {
                               {statusLabel(ep.status)}
                             </Badge>
                           </div>
-                          <p className="text-base font-medium leading-snug">
+                          <p className="text-base leading-snug font-medium">
                             {guestName}
                           </p>
                           {topic ? (
@@ -154,7 +154,7 @@ export default async function DashboardPage() {
           </section>
 
           <section>
-            <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+            <p className="text-xs font-medium tracking-wider text-muted-foreground uppercase">
               Recent Activity
             </p>
             <div className="mt-3">
@@ -166,11 +166,17 @@ export default async function DashboardPage() {
                 <Card className="rounded-xl">
                   <CardContent className="divide-y divide-border py-0">
                     {recentEmails.map((em) => (
-                      <div key={em.id} className="flex items-center justify-between py-3">
+                      <div
+                        key={em.id}
+                        className="flex items-center justify-between py-3"
+                      >
                         <div>
                           <p className="text-sm">{em.subject}</p>
                           <p className="font-mono text-[13px] text-muted-foreground">
                             {em.recipient_email}
+                          </p>
+                          <p className="text-xs text-muted-foreground">
+                            {em.purpose.replaceAll("_", " ")}
                           </p>
                         </div>
                         <p className="font-mono text-[13px] text-muted-foreground">
@@ -191,7 +197,7 @@ export default async function DashboardPage() {
         {/* Sidebar stats */}
         <div className="space-y-6">
           <section>
-            <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+            <p className="text-xs font-medium tracking-wider text-muted-foreground uppercase">
               Quick Stats
             </p>
             <Card className="mt-3 rounded-xl">
