@@ -1,19 +1,13 @@
 "use client"
 
-import type { EmailOtpType } from "@supabase/supabase-js"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { useEffect, useRef, useState } from "react"
 
-import {
-  HOST_PASSWORD_RECOVERY_DESTINATION,
-  authDestinationForEvent,
-  authDestinationForType,
-  isPasswordRecoveryType,
-} from "@/lib/auth/destinations"
+import { HOST_PASSWORD_RECOVERY_DESTINATION } from "@/lib/auth/destinations"
 import { createClient } from "@/lib/supabase/client"
 
-export default function AuthConfirmPage() {
+export function RecoveryConfirm() {
   const router = useRouter()
   const [error, setError] = useState<string | null>(null)
   const finished = useRef(false)
@@ -21,67 +15,68 @@ export default function AuthConfirmPage() {
   useEffect(() => {
     const supabase = createClient()
     const params = new URLSearchParams(window.location.search)
-    const token_hash = params.get("token_hash")
-    const type = params.get("type") as EmailOtpType | null
+    const code = params.get("code")
+    const tokenHash = params.get("token_hash")
 
-    function finish(ok: boolean, errMsg: string | null, dest: string) {
+    function finish(ok: boolean, errMsg: string | null) {
       if (finished.current) return
       finished.current = true
       if (!ok) {
-        setError(errMsg ?? "Could not confirm sign-in.")
+        setError(errMsg ?? "This reset link is invalid or has expired.")
         return
       }
-      if (dest === HOST_PASSWORD_RECOVERY_DESTINATION) {
-        window.sessionStorage.setItem("host-password-recovery", "1")
-      }
-      router.replace(dest)
+      window.sessionStorage.setItem("host-password-recovery", "1")
+      router.replace(HOST_PASSWORD_RECOVERY_DESTINATION)
     }
 
-    if (token_hash && type) {
+    if (code) {
       void supabase.auth
-        .verifyOtp({ token_hash, type })
-        .then(({ error: e }) => {
-          const destination = authDestinationForType(type)
-          finish(!e, e?.message ?? null, destination)
-        })
+        .exchangeCodeForSession(code)
+        .then(({ error: exchangeError }) =>
+          finish(!exchangeError, exchangeError?.message ?? null)
+        )
+      return
+    }
+
+    if (tokenHash) {
+      void supabase.auth
+        .verifyOtp({ token_hash: tokenHash, type: "recovery" })
+        .then(({ error: verifyError }) =>
+          finish(!verifyError, verifyError?.message ?? null)
+        )
       return
     }
 
     const hashParams = new URLSearchParams(window.location.hash.slice(1))
-    const hashType = hashParams.get("type")
     const hasAuthHash =
       hashParams.has("access_token") || hashParams.has("refresh_token")
 
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((event, session) => {
+      if (!session) return
       if (
-        session &&
-        (event === "SIGNED_IN" ||
-          event === "PASSWORD_RECOVERY" ||
-          event === "TOKEN_REFRESHED" ||
-          event === "INITIAL_SESSION")
+        event === "PASSWORD_RECOVERY" ||
+        event === "SIGNED_IN" ||
+        event === "INITIAL_SESSION"
       ) {
-        finish(true, null, authDestinationForEvent(event, hashType ?? type))
+        finish(true, null)
       }
     })
 
     void supabase.auth.getSession().then(({ data: { session }, error: e }) => {
       if (e) {
-        finish(false, e.message, "/login")
+        finish(false, e.message)
         return
       }
       if (session) {
-        if (isPasswordRecoveryType(hashType ?? type)) {
-          window.sessionStorage.setItem("host-password-recovery", "1")
-        }
-        finish(true, null, authDestinationForType(hashType ?? type))
+        finish(true, null)
       }
     })
 
     const timeout = window.setTimeout(() => {
       if (!finished.current && !hasAuthHash) {
-        finish(false, "This link is invalid or has expired.", "/login")
+        finish(false, "This reset link is invalid or has expired.")
       }
     }, 8000)
 
@@ -116,5 +111,5 @@ export default function AuthConfirmPage() {
     )
   }
 
-  return <p className="text-sm text-muted-foreground">Confirming sign-in…</p>
+  return <p className="text-sm text-muted-foreground">Confirming reset link…</p>
 }

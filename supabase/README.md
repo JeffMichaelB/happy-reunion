@@ -16,14 +16,19 @@
    - **Redirect URLs:** add all of:
      - `http://localhost:3000/auth/callback`
      - `http://localhost:3000/auth/confirm`
+     - `http://localhost:3000/auth/recovery`
+     - `http://127.0.0.1:3000/auth/callback`
+     - `http://127.0.0.1:3000/auth/confirm`
+     - `http://127.0.0.1:3000/auth/recovery`
      - `https://happy-reunion.vercel.app/auth/callback`
      - `https://happy-reunion.vercel.app/auth/confirm`
+     - `https://happy-reunion.vercel.app/auth/recovery`
    - Set `NEXT_PUBLIC_SITE_URL` in Vercel to the same production URL.
-4. **Authentication → Email Templates → Reset password** (recommended): point the link at `/auth/confirm` so recovery lands in the app handler:
-   ```html
-   <a href="{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&type=recovery">Reset password</a>
+4. **Authentication → Email Templates → Reset password** (recommended): point the link at `/auth/recovery` so recovery lands in the dedicated app handler:
+   ```text
+   <a href="{{ .SiteURL }}/auth/recovery?token_hash={{ .TokenHash }}">Reset password</a>
    ```
-   The default `{{ .ConfirmationURL }}` also works once Site URL is production; the app handles hash redirects on any page.
+   The default `{{ .ConfirmationURL }}` also works once Site URL is production; the reset form sends Supabase back to `/auth/recovery`.
 
 ## Scheduling (Cal.com)
 

@@ -21,15 +21,31 @@ export function UpdatePasswordForm() {
 
   useEffect(() => {
     const supabase = createClient()
-    void supabase.auth.getSession().then(({ data: { session }, error: sessionError }) => {
-      if (sessionError || !session) {
-        setLinkError(
-          "This reset link is invalid or has expired. Request a new one from sign in.",
-        )
-        return
-      }
-      setReady(true)
-    })
+    const urlSearchParams = new URLSearchParams(window.location.search)
+    const urlHashParams = new URLSearchParams(window.location.hash.slice(1))
+    const hasRecoveryHandoff =
+      urlSearchParams.get("recovery") === "1" ||
+      window.sessionStorage.getItem("host-password-recovery") === "1" ||
+      urlHashParams.get("type") === "recovery"
+
+    void supabase.auth
+      .getSession()
+      .then(({ data: { session }, error: sessionError }) => {
+        if (sessionError || !session) {
+          setLinkError(
+            "This reset link is invalid or has expired. Request a new one from sign in."
+          )
+          return
+        }
+        if (!hasRecoveryHandoff) {
+          setLinkError(
+            "Request a password reset link before setting a new password."
+          )
+          return
+        }
+        window.sessionStorage.setItem("host-password-recovery", "1")
+        setReady(true)
+      })
   }, [])
 
   async function submit(e: React.FormEvent) {
@@ -51,6 +67,7 @@ export function UpdatePasswordForm() {
       setPending(false)
       return
     }
+    window.sessionStorage.removeItem("host-password-recovery")
     router.refresh()
     router.replace("/host/dashboard")
   }
@@ -81,9 +98,7 @@ export function UpdatePasswordForm() {
   }
 
   if (!ready) {
-    return (
-      <p className="text-sm text-muted-foreground">Loading…</p>
-    )
+    return <p className="text-sm text-muted-foreground">Loading…</p>
   }
 
   return (
@@ -117,7 +132,7 @@ export function UpdatePasswordForm() {
             onChange={(e) => setConfirm(e.target.value)}
           />
         </label>
-        {error ? <p className="text-destructive text-sm">{error}</p> : null}
+        {error ? <p className="text-sm text-destructive">{error}</p> : null}
         <Button type="submit" size="lg" disabled={pending} className="w-full">
           {pending ? "Saving…" : "Save password"}
         </Button>
