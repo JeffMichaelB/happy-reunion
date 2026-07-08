@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="The Reunion Projects">
+  <rect width="64" height="64" rx="14" fill="#f7f4ed"/>
+  <circle cx="32" cy="32" r="22" fill="#1c1c1c"/>
+  <path d="M21 42V21h10c5 0 8 3 8 7 0 3-2 5-5 6l7 8h-7l-6-7h-2v7h-5Zm5-12h5c2 0 3-1 3-3s-1-3-3-3h-5v6Z" fill="#f7f4ed"/>
+  <path d="M42 42V21h7c5 0 8 3 8 7s-3 7-8 7h-2v7h-5Zm5-12h2c2 0 3-1 3-3s-1-3-3-3h-2v6Z" fill="#f7f4ed" opacity=".72"/>
+</svg>
