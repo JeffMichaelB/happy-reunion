@@ -120,7 +120,12 @@ export default async function DashboardPage() {
                     "No guest"
                   const topic = displayTopic(ep.topic)
                   return (
-                    <Link key={ep.id} href={`/host/episodes/${ep.id}`}>
+                    <Link
+                      key={ep.id}
+                      href={`/host/episodes/${ep.id}`}
+                      className="block rounded-xl outline-none transition-colors focus-visible:ring-2 focus-visible:ring-[rgba(59,130,246,0.5)]"
+                      aria-label={`Open episode for ${guestName}`}
+                    >
                       <Card
                         size="sm"
                         className="rounded-xl py-0 transition-colors hover:border-[rgba(28,28,28,0.4)]"
