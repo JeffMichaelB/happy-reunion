@@ -35,8 +35,7 @@ export default function PrivacyPage() {
       </header>
 
       <div className="px-6 py-16 md:py-24">
-        <FadeUp>
-          <div className="mx-auto max-w-4xl">
+        <div className="mx-auto max-w-4xl">
             <p className="text-lg leading-relaxed text-muted-foreground">
               Reunion Projects (&ldquo;Reunion Projects,&rdquo; &ldquo;we,&rdquo;
               &ldquo;our,&rdquo; or &ldquo;us&rdquo;) is committed to protecting
@@ -442,7 +441,6 @@ export default function PrivacyPage() {
               </p>
             </section>
           </div>
-        </FadeUp>
       </div>
 
       <div className="px-6 pb-24 md:pb-32">

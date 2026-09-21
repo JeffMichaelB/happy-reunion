@@ -35,8 +35,7 @@ export default function TermsPage() {
       </header>
 
       <div className="px-6 py-16 md:py-24">
-        <FadeUp>
-          <div className="prose prose-neutral dark:prose-invert mx-auto max-w-4xl">
+        <div className="mx-auto max-w-4xl">
             <p className="lead text-lg text-muted-foreground">
               Please read these Terms and Conditions (&ldquo;Terms&rdquo;)
               carefully before using The Reunion Projects platform, website, and
@@ -269,7 +268,6 @@ export default function TermsPage() {
               </p>
             </Section>
           </div>
-        </FadeUp>
       </div>
 
       <div className="px-6 pb-24 md:pb-32">
