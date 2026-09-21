@@ -3,38 +3,46 @@
 @import "shadcn/tailwind.css";
 
 :root {
-    --background: #f7f4ed;
-    --foreground: #1c1c1c;
-    --card: #f7f4ed;
-    --card-foreground: #1c1c1c;
-    --popover: #fcfbf8;
-    --popover-foreground: #1c1c1c;
-    --primary: #1c1c1c;
-    --primary-foreground: #fcfbf8;
-    --secondary: #f0ede6;
-    --secondary-foreground: #1c1c1c;
-    --muted: rgba(28, 28, 28, 0.04);
-    --muted-foreground: #5f5f5d;
-    --accent: rgba(28, 28, 28, 0.04);
-    --accent-foreground: #1c1c1c;
+    /* Brand Colors */
+    --brand-deep-navy: #0F172A;
+    --brand-sage: #6F8F84;
+    --brand-warm-ivory: #F7F5F2;
+    --brand-warm-taupe: #8BA48C;
+    --brand-charcoal: #2B3137;
+
+    /* Semantic Colors (mapped from brand) */
+    --background: var(--brand-warm-ivory);
+    --foreground: var(--brand-deep-navy);
+    --card: var(--brand-warm-ivory);
+    --card-foreground: var(--brand-deep-navy);
+    --popover: #FDFCFA;
+    --popover-foreground: var(--brand-deep-navy);
+    --primary: var(--brand-deep-navy);
+    --primary-foreground: var(--brand-warm-ivory);
+    --secondary: #EFEEE9;
+    --secondary-foreground: var(--brand-deep-navy);
+    --muted: rgba(15, 23, 42, 0.04);
+    --muted-foreground: var(--brand-charcoal);
+    --accent: var(--brand-sage);
+    --accent-foreground: var(--brand-warm-ivory);
     --destructive: #ef4444;
-    --border: #eceae4;
-    --input: #eceae4;
-    --ring: rgba(59, 130, 246, 0.5);
+    --border: #E8E6E1;
+    --input: #E8E6E1;
+    --ring: var(--brand-sage);
     --chart-1: oklch(0.905 0.182 98.111);
     --chart-2: oklch(0.795 0.184 86.047);
     --chart-3: oklch(0.681 0.162 75.834);
     --chart-4: oklch(0.554 0.135 66.442);
     --chart-5: oklch(0.476 0.114 61.907);
     --radius: 0.5rem;
-    --sidebar: #f3f0e8;
-    --sidebar-foreground: #1c1c1c;
-    --sidebar-primary: #1c1c1c;
-    --sidebar-primary-foreground: #fcfbf8;
-    --sidebar-accent: #eeebe5;
-    --sidebar-accent-foreground: #1c1c1c;
-    --sidebar-border: #eceae4;
-    --sidebar-ring: rgba(59, 130, 246, 0.5);
+    --sidebar: #F0EFEA;
+    --sidebar-foreground: var(--brand-deep-navy);
+    --sidebar-primary: var(--brand-deep-navy);
+    --sidebar-primary-foreground: var(--brand-warm-ivory);
+    --sidebar-accent: #E9E8E3;
+    --sidebar-accent-foreground: var(--brand-deep-navy);
+    --sidebar-border: #E8E6E1;
+    --sidebar-ring: var(--brand-sage);
 }
 
 @theme inline {
