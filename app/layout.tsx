@@ -1,5 +1,5 @@
 import type { Metadata } from "next"
-import { Geist_Mono, Outfit, Merriweather } from "next/font/google"
+import { IBM_Plex_Mono, IBM_Plex_Sans, Inter } from "next/font/google"
 
 import { AuthSessionHandler } from "@/components/auth-session-handler"
 import "./globals.css"
@@ -58,18 +58,21 @@ export const metadata: Metadata = {
   },
 }
 
-const merriweatherHeading = Merriweather({
+const interHeading = Inter({
   subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
   variable: "--font-heading",
 })
 
-const outfit = Outfit({
+const ibmPlexSans = IBM_Plex_Sans({
   subsets: ["latin"],
+  weight: ["300", "400", "500", "600", "700"],
   variable: "--font-sans",
 })
 
-const fontMono = Geist_Mono({
+const ibmPlexMono = IBM_Plex_Mono({
   subsets: ["latin"],
+  weight: ["400", "500"],
   variable: "--font-mono",
 })
 
@@ -83,10 +86,10 @@ export default function RootLayout({
       lang="en"
       className={cn(
         "antialiased",
-        fontMono.variable,
+        ibmPlexMono.variable,
         "font-sans",
-        outfit.variable,
-        merriweatherHeading.variable,
+        ibmPlexSans.variable,
+        interHeading.variable,
       )}
     >
       <body>

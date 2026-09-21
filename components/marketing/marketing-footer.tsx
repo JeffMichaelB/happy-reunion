@@ -79,15 +79,14 @@ export function MarketingFooter() {
             &copy; {new Date().getFullYear()} The Reunion Projects
           </p>
           <div className="flex flex-wrap items-center gap-x-6 gap-y-2">
-            {/* TODO: replace with real /privacy and /terms pages once written */}
             <Link
-              href="#"
+              href="/privacy"
               className="font-mono text-[11px] uppercase tracking-[0.14em] text-muted-foreground transition-colors hover:text-foreground"
             >
               Privacy
             </Link>
             <Link
-              href="#"
+              href="/terms"
               className="font-mono text-[11px] uppercase tracking-[0.14em] text-muted-foreground transition-colors hover:text-foreground"
             >
               Terms
