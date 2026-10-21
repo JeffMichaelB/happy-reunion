@@ -63,16 +63,6 @@ export default function OpenGraphImage() {
           <div
             style={{
               display: "flex",
-              fontSize: 24,
-              letterSpacing: "0.18em",
-              textTransform: "uppercase",
-            }}
-          >
-            Reunion Projects · Vol. 01
-          </div>
-          <div
-            style={{
-              display: "flex",
               fontSize: 88,
               fontWeight: 800,
               letterSpacing: "-0.055em",

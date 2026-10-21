@@ -53,19 +53,9 @@ export function MarketingNav() {
         <nav className="mx-auto flex h-16 max-w-7xl items-center justify-between px-6">
           <Link
             href="/"
-            className="group flex shrink-0 items-center gap-2.5"
+            className="flex shrink-0 items-center"
             aria-label="The Reunion Projects home"
           >
-            <span
-              aria-hidden="true"
-              className="font-mono text-[10px] font-medium uppercase tracking-[0.18em] text-muted-foreground transition-colors group-hover:text-foreground"
-            >
-              R/01
-            </span>
-            <span
-              aria-hidden="true"
-              className="h-3.5 w-px bg-border"
-            />
             <Wordmark />
           </Link>
 
@@ -156,11 +146,7 @@ export function MarketingNav() {
         )}
       >
         <div className="flex flex-1 flex-col px-6 pt-12">
-          <p className="font-mono text-[11px] font-medium uppercase tracking-[0.18em] text-muted-foreground">
-            Reunion Projects · Vol. 01
-          </p>
-
-          <ol className="mt-10 flex flex-col gap-6" role="list">
+          <ol className="flex flex-col gap-6" role="list">
             {MARKETING_NAV_LINKS.map((link, idx) => {
               const isActive = pathname === link.href
               return (
