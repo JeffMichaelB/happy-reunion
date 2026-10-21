@@ -146,11 +146,7 @@ export function MarketingNav() {
         )}
       >
         <div className="flex flex-1 flex-col px-6 pt-12">
-          <p className="font-mono text-[11px] font-medium uppercase tracking-[0.18em] text-muted-foreground">
-            Reunion Projects · Vol. 01
-          </p>
-
-          <ol className="mt-10 flex flex-col gap-6" role="list">
+          <ol className="flex flex-col gap-6" role="list">
             {MARKETING_NAV_LINKS.map((link, idx) => {
               const isActive = pathname === link.href
               return (

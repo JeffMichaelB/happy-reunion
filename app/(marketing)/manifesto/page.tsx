@@ -19,14 +19,7 @@ export default function ManifestoPage() {
       <header className="relative px-6 pb-12 pt-12 lg:pb-20 lg:pt-20">
         <div className="mx-auto max-w-7xl">
           <FadeUp>
-            <p className="font-mono text-[11px] font-medium uppercase tracking-[0.18em] text-muted-foreground">
-              <span className="mr-3 inline-block h-1 w-6 -translate-y-1 bg-foreground/40 align-middle" />
-              Manifesto · Vol. 01
-            </p>
-          </FadeUp>
-
-          <FadeUp delay={0.08}>
-            <h1 className="mt-8 font-heading text-[clamp(3rem,7.4vw,6.5rem)] font-bold leading-[0.98] tracking-[-0.02em] text-foreground">
+            <h1 className="font-heading text-[clamp(3rem,7.4vw,6.5rem)] font-bold leading-[0.98] tracking-[-0.02em] text-foreground">
               Stop scrolling.
               <br />
               <span className="font-heading italic font-normal">Start talking.</span>
