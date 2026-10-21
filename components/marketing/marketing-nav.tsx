@@ -53,19 +53,9 @@ export function MarketingNav() {
         <nav className="mx-auto flex h-16 max-w-7xl items-center justify-between px-6">
           <Link
             href="/"
-            className="group flex shrink-0 items-center gap-2.5"
+            className="flex shrink-0 items-center"
             aria-label="The Reunion Projects home"
           >
-            <span
-              aria-hidden="true"
-              className="font-mono text-[10px] font-medium uppercase tracking-[0.18em] text-muted-foreground transition-colors group-hover:text-foreground"
-            >
-              R/01
-            </span>
-            <span
-              aria-hidden="true"
-              className="h-3.5 w-px bg-border"
-            />
             <Wordmark />
           </Link>
 

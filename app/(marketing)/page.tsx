@@ -98,13 +98,6 @@ export default function HomePage() {
         <div className="mx-auto grid w-full max-w-7xl grid-cols-1 items-start gap-16 px-6 pb-12 pt-12 lg:flex-1 lg:grid-cols-12 lg:items-center lg:gap-12 lg:py-12">
           <div className="lg:col-span-7">
             <FadeUp>
-              <p className="font-mono text-[11px] font-medium uppercase tracking-[0.18em] text-muted-foreground">
-                <span className="mr-3 inline-block h-1 w-6 -translate-y-1 bg-foreground/40 align-middle" />
-                Reunion Projects · Vol. 01
-              </p>
-            </FadeUp>
-
-            <FadeUp delay={0.08}>
               <h1
                 id="hero-heading"
                 className="mt-8 font-heading text-[clamp(2.75rem,6.4vw,5.5rem)] font-bold leading-[0.98] tracking-[-0.02em] text-foreground"
