@@ -3,6 +3,21 @@
 import { motion } from "motion/react"
 import { Microphone, Waveform } from "@phosphor-icons/react"
 
+/**
+ * PLACEHOLDER COUNT: The front card displays a "Number of Reunions Recorded"
+ * statistic. This is currently a placeholder (—) because:
+ *
+ * 1. The `bookings.status = 'recorded'` count lives behind RLS policies that
+ *    only allow authenticated hosts to see their own data.
+ * 2. Exposing a live aggregate requires either:
+ *    - A PostgreSQL `SECURITY DEFINER` function returning just the count
+ *    - A Supabase Edge Function using service-role key
+ *    - An API route using service-role key server-side
+ *
+ * See PR body for details on what Jeff needs to approve for a live count.
+ */
+const RECORDED_REUNIONS_COUNT: string | number = "—" // PLACEHOLDER: Replace with live count
+
 const CARDS = [
   {
     eyebrow: "REUNION 014",
@@ -13,16 +28,18 @@ const CARDS = [
     translateX: -16,
     translateY: 8,
     z: 1,
+    showCount: false,
   },
   {
     eyebrow: "REUNION 022",
-    name: "Daniel · Founding team",
+    name: "Number of Reunions Recorded",
     detail: "Scheduled · Friday, 5pm",
     initials: "DK",
     rotation: 4,
     translateX: 12,
     translateY: 0,
     z: 3,
+    showCount: true,
   },
   {
     eyebrow: "REUNION 031",
@@ -33,6 +50,7 @@ const CARDS = [
     translateX: 36,
     translateY: -28,
     z: 2,
+    showCount: false,
   },
 ] as const
 
@@ -71,12 +89,25 @@ export function ReunionCardsStack() {
             </div>
           </div>
 
-          <p className="mt-6 font-heading text-xl font-semibold leading-tight tracking-tight text-foreground">
-            {card.name}
-          </p>
-          <p className="mt-2 font-mono text-[11px] uppercase tracking-wider text-muted-foreground">
-            {card.detail}
-          </p>
+          {card.showCount ? (
+            <>
+              <p className="mt-4 font-mono text-[10px] font-medium uppercase tracking-[0.14em] text-muted-foreground">
+                {card.name}
+              </p>
+              <p className="mt-1 font-heading text-5xl font-bold leading-tight tracking-tight text-foreground">
+                {RECORDED_REUNIONS_COUNT}
+              </p>
+            </>
+          ) : (
+            <>
+              <p className="mt-6 font-heading text-xl font-semibold leading-tight tracking-tight text-foreground">
+                {card.name}
+              </p>
+              <p className="mt-2 font-mono text-[11px] uppercase tracking-wider text-muted-foreground">
+                {card.detail}
+              </p>
+            </>
+          )}
 
           <div className="mt-6 flex items-center gap-3 border-t border-border pt-5">
             <div className="flex size-9 items-center justify-center rounded-full bg-foreground text-background">
