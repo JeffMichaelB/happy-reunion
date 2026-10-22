@@ -4,11 +4,29 @@ import { cookies } from "next/headers"
 
 import { authDestinationForType } from "@/lib/auth/destinations"
 
+/**
+ * Validate and sanitize redirect path to prevent open redirect attacks.
+ * Only allows same-origin relative paths starting with "/".
+ */
+function sanitizeRedirectPath(path: string | null, fallback: string): string {
+  if (!path) return fallback
+  const trimmed = path.trim()
+  if (
+    !trimmed.startsWith("/") ||
+    trimmed.startsWith("//") ||
+    trimmed.includes("://")
+  ) {
+    return fallback
+  }
+  return trimmed
+}
+
 export async function GET(request: Request) {
   const url = new URL(request.url)
   const code = url.searchParams.get("code")
   const type = url.searchParams.get("type")
-  const next = url.searchParams.get("next") ?? authDestinationForType(type)
+  const fallbackDest = authDestinationForType(type)
+  const next = sanitizeRedirectPath(url.searchParams.get("next"), fallbackDest)
   const origin = url.origin
 
   const response = NextResponse.redirect(`${origin}${next}`)
