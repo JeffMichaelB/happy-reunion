@@ -7,7 +7,7 @@ import { cancelBooking, rescheduleBooking } from "@/lib/calcom/api"
 import { logEmailSend } from "@/lib/email/audit"
 import { EmailNotConfiguredError, sendEmail } from "@/lib/email/resend"
 import { findOrCreateGuestId } from "@/lib/guests/link"
-import type { Enums } from "@/lib/database.types"
+import type { Enums, Tables } from "@/lib/database.types"
 import { createClient } from "@/lib/supabase/server"
 
 type BookingStatus = Enums<"booking_status">
@@ -131,7 +131,7 @@ export async function updateEpisode(formData: FormData) {
   const status: BookingStatus | undefined =
     statusRaw && isBookingStatus(statusRaw) ? statusRaw : undefined
 
-  const patch: Record<string, unknown> = {
+  const patch: Partial<Tables<"bookings">> = {
     guest_email,
     guest_name,
     starts_at,
