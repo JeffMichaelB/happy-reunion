@@ -32,12 +32,12 @@ const STEPS = [
   {
     label: "02",
     title: "Sit down for a real conversation",
-    body: "One hour, two voices, no algorithm in the room. Record in-person or remote. The guest sets what is on or off limits.",
+    body: "One hour, meaningful conversation, no algorithm. The guest sets what is on or off limits.",
   },
   {
     label: "03",
     title: "Keep it. Share it. Pass it on.",
-    body: "Your Reunion is yours: a private artifact for the two of you, a quiet share with family, or — only with consent — a public story.",
+    body: "The recording is yours: a private artifact for you, a quiet share with family, or — only with consent — a public story.",
   },
 ] as const
 
@@ -59,8 +59,8 @@ const ARTIFACTS = [
   {
     icon: ChatCircleText,
     label: "Prompts",
-    title: "Conversation guides crafted for depth",
-    body: "Curated prompts and reflection cards keep the conversation honest and human.",
+    title: "Conversation starters crafted for depth",
+    body: "Curated prompts based upon whats worked for us and engages intentional and lasting conversations.",
     span: "md:col-span-2",
   },
   {
