@@ -1,5 +1,6 @@
 "use client"
 
+import Image from "next/image"
 import { motion } from "motion/react"
 import { Microphone, Waveform } from "@phosphor-icons/react"
 
@@ -35,6 +36,7 @@ const CARDS = [
     name: "Number of Reunions Recorded",
     detail: "Scheduled · Friday, 5pm",
     initials: "DK",
+    logo: "/headphones-logo.png",
     rotation: 4,
     translateX: 12,
     translateY: 0,
@@ -84,9 +86,19 @@ export function ReunionCardsStack() {
             <p className="font-mono text-[10px] font-medium uppercase tracking-[0.14em] text-muted-foreground">
               {card.eyebrow}
             </p>
-            <div className="flex size-8 items-center justify-center rounded-full border border-border bg-background text-[11px] font-medium text-foreground/80">
-              {card.initials}
-            </div>
+            {"logo" in card && card.logo ? (
+              <Image
+                src={card.logo}
+                alt="Reunion Projects"
+                width={48}
+                height={29}
+                className="h-auto w-12"
+              />
+            ) : (
+              <div className="flex size-8 items-center justify-center rounded-full border border-border bg-background text-[11px] font-medium text-foreground/80">
+                {card.initials}
+              </div>
+            )}
           </div>
 
           {card.showCount ? (
@@ -94,7 +106,7 @@ export function ReunionCardsStack() {
               <p className="mt-4 font-mono text-[10px] font-medium uppercase tracking-[0.14em] text-muted-foreground">
                 {card.name}
               </p>
-              <p className="mt-1 font-heading text-5xl font-bold leading-tight tracking-tight text-foreground">
+              <p className="mt-1 font-heading text-7xl font-bold leading-none tracking-tight text-foreground">
                 {RECORDED_REUNIONS_COUNT}
               </p>
             </>
