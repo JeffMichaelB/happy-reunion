@@ -7,6 +7,12 @@ import { Microphone, Waveform } from "@phosphor-icons/react"
 /** Fallback shown when live count is unavailable */
 const FALLBACK_COUNT = "—"
 
+/** Format eyebrow label: "REUNION 020" (zero-padded 3 digits) or "REUNION —" on fallback */
+function formatEyebrow(count: number | null | undefined): string {
+  if (count == null) return `REUNION ${FALLBACK_COUNT}`
+  return `REUNION ${String(count).padStart(3, "0")}`
+}
+
 interface ReunionCardsStackProps {
   /** Live count of recorded reunions. Null/undefined shows fallback. */
   recordedCount?: number | null
@@ -25,7 +31,7 @@ const CARDS = [
     showCount: false,
   },
   {
-    eyebrow: "REUNION 022",
+    eyebrow: null, // Dynamic: uses live recordedCount
     name: "Number of Reunions Recorded",
     detail: "Scheduled · Friday, 5pm",
     initials: "DK",
@@ -51,6 +57,7 @@ const CARDS = [
 
 export function ReunionCardsStack({ recordedCount }: ReunionCardsStackProps) {
   const displayCount = recordedCount != null ? recordedCount : FALLBACK_COUNT
+  const dynamicEyebrow = formatEyebrow(recordedCount)
 
   return (
     <div className="relative mx-auto h-[380px] w-full max-w-[440px]">
@@ -79,7 +86,7 @@ export function ReunionCardsStack({ recordedCount }: ReunionCardsStackProps) {
         >
           <div className="flex items-start justify-between">
             <p className="font-mono text-[10px] font-medium uppercase tracking-[0.14em] text-muted-foreground">
-              {card.eyebrow}
+              {card.showCount ? dynamicEyebrow : card.eyebrow}
             </p>
             {"logo" in card && card.logo ? (
               <Image
