@@ -4,6 +4,8 @@ import { unstable_cache } from "next/cache"
 
 import { createAdminClient } from "@/lib/supabase/admin"
 
+// Force rebuild: env var now available for preview
+
 /**
  * Fetches the count of reunions with status 'recorded' from the bookings table.
  *
