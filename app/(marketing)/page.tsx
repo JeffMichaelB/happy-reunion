@@ -14,6 +14,7 @@ import {
 import { CtaStrip } from "@/components/marketing/cta-strip"
 import { FadeUp, Marquee, Stagger, StaggerItem } from "@/components/marketing/motion"
 import { ReunionCardsStack } from "@/components/marketing/reunion-cards-stack"
+import { getRecordedReunionsCount } from "@/lib/data/recorded-reunions-count"
 import { buildMetadata } from "@/lib/seo/metadata"
 
 export const metadata: Metadata = buildMetadata({
@@ -88,7 +89,9 @@ const VALUES = [
   "Conversations worth keeping",
 ] as const
 
-export default function HomePage() {
+export default async function HomePage() {
+  const recordedCount = await getRecordedReunionsCount()
+
   return (
     <>
       <section
@@ -144,7 +147,7 @@ export default function HomePage() {
           </div>
 
           <div className="hidden lg:col-span-5 lg:block lg:-translate-y-6">
-            <ReunionCardsStack />
+            <ReunionCardsStack recordedCount={recordedCount} />
           </div>
         </div>
       </section>

@@ -4,20 +4,13 @@ import Image from "next/image"
 import { motion } from "motion/react"
 import { Microphone, Waveform } from "@phosphor-icons/react"
 
-/**
- * PLACEHOLDER COUNT: The front card displays a "Number of Reunions Recorded"
- * statistic. This is currently a placeholder (—) because:
- *
- * 1. The `bookings.status = 'recorded'` count lives behind RLS policies that
- *    only allow authenticated hosts to see their own data.
- * 2. Exposing a live aggregate requires either:
- *    - A PostgreSQL `SECURITY DEFINER` function returning just the count
- *    - A Supabase Edge Function using service-role key
- *    - An API route using service-role key server-side
- *
- * See PR body for details on what Jeff needs to approve for a live count.
- */
-const RECORDED_REUNIONS_COUNT: string | number = "—" // PLACEHOLDER: Replace with live count
+/** Fallback shown when live count is unavailable */
+const FALLBACK_COUNT = "—"
+
+interface ReunionCardsStackProps {
+  /** Live count of recorded reunions. Null/undefined shows fallback. */
+  recordedCount?: number | null
+}
 
 const CARDS = [
   {
@@ -56,7 +49,9 @@ const CARDS = [
   },
 ] as const
 
-export function ReunionCardsStack() {
+export function ReunionCardsStack({ recordedCount }: ReunionCardsStackProps) {
+  const displayCount = recordedCount != null ? recordedCount : FALLBACK_COUNT
+
   return (
     <div className="relative mx-auto h-[380px] w-full max-w-[440px]">
       {CARDS.map((card, idx) => (
@@ -107,7 +102,7 @@ export function ReunionCardsStack() {
                 {card.name}
               </p>
               <p className="mt-1 font-heading text-7xl font-bold leading-none tracking-tight text-foreground">
-                {RECORDED_REUNIONS_COUNT}
+                {displayCount}
               </p>
             </>
           ) : (
