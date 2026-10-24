@@ -60,7 +60,7 @@ const ARTIFACTS = [
     icon: ChatCircleText,
     label: "Prompts",
     title: "Conversation starters crafted for depth",
-    body: "Curated prompts based upon whats worked for us and engages intentional and lasting conversations.",
+    body: "Curated prompts based upon what's worked for us and engages intentional and lasting conversations.",
     span: "md:col-span-2",
   },
   {
