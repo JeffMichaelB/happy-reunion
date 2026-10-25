@@ -1,4 +1,5 @@
 import type { Metadata } from "next"
+import Image from "next/image"
 import Link from "next/link"
 import {
   ArrowRight,
@@ -98,12 +99,24 @@ export default async function HomePage() {
         aria-labelledby="hero-heading"
         className="relative lg:flex lg:min-h-[calc(100svh-4rem)] lg:flex-col"
       >
-        <div className="mx-auto grid w-full max-w-7xl grid-cols-1 items-start gap-16 px-6 pb-12 pt-12 lg:flex-1 lg:grid-cols-12 lg:items-center lg:gap-12 lg:py-12">
-          <div className="lg:col-span-7">
+        <div className="mx-auto grid w-full max-w-7xl grid-cols-1 items-start gap-16 px-6 pb-12 pt-12 lg:flex-1 lg:grid-cols-12 lg:items-stretch lg:gap-12 lg:py-12">
+          {/* Left column: headline content, vertically distributed to align with right column */}
+          <div className="lg:col-span-7 lg:flex lg:flex-col lg:justify-between lg:pb-12">
+            {/* Mobile logo - shown above headline on small screens */}
+            <FadeUp className="mb-6 lg:hidden">
+              <Image
+                src="/images/trp-logo.png"
+                alt="The Reunion Projects logo"
+                width={180}
+                height={169}
+                className="h-auto w-[180px]"
+              />
+            </FadeUp>
+
             <FadeUp>
               <h1
                 id="hero-heading"
-                className="mt-8 font-heading text-[clamp(2.75rem,6.4vw,5.5rem)] font-bold leading-[0.98] tracking-[-0.02em] text-foreground"
+                className="font-heading text-[clamp(2.75rem,6.4vw,5.5rem)] font-bold leading-[0.98] tracking-[-0.02em] text-foreground"
               >
                 The stories that
                 <br className="hidden sm:block" />{" "}
@@ -112,42 +125,57 @@ export default async function HomePage() {
               </h1>
             </FadeUp>
 
-            <FadeUp delay={0.16}>
-              <p className="mt-6 max-w-xl text-lg leading-relaxed text-muted-foreground md:text-xl">
-                Conversations about the distance between who we were then and
-                who we are now &mdash; the pivots, the reinventions, the beauty
-                of the unexpected.
-              </p>
-            </FadeUp>
+            <div className="mt-6 lg:mt-0">
+              <FadeUp delay={0.16}>
+                <p className="max-w-xl text-lg leading-relaxed text-muted-foreground md:text-xl">
+                  Conversations about the distance between who we were then and
+                  who we are now &mdash; the pivots, the reinventions, the beauty
+                  of the unexpected.
+                </p>
+              </FadeUp>
 
-            <FadeUp delay={0.24}>
-              <div className="mt-8 flex flex-col items-stretch gap-3 sm:flex-row sm:items-center">
-                <Link
-                  href="/signup"
-                  className="group inline-flex h-12 items-center justify-center gap-2 rounded-md bg-primary px-6 text-sm font-medium text-primary-foreground shadow-[rgba(255,255,255,0.2)_0px_0.5px_0px_0px_inset,rgba(0,0,0,0.2)_0px_0px_0px_0.5px_inset,rgba(0,0,0,0.05)_0px_1px_2px_0px] transition-all hover:opacity-85 active:translate-y-px"
-                >
-                  Host a Reunion
-                  <ArrowRight
-                    className="size-4 transition-transform group-hover:translate-x-0.5"
-                    weight="bold"
-                  />
-                </Link>
-                <Link
-                  href="/manifesto"
-                  className="group inline-flex h-12 items-center justify-center gap-2 rounded-md border border-border bg-background px-5 text-sm font-medium text-foreground transition-colors hover:bg-[rgba(28,28,28,0.04)]"
-                >
-                  Read the manifesto
-                  <ArrowUpRight
-                    className="size-4 text-muted-foreground transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5"
-                    weight="bold"
-                  />
-                </Link>
-              </div>
-            </FadeUp>
+              <FadeUp delay={0.24}>
+                <div className="mt-8 flex flex-col items-stretch gap-3 sm:flex-row sm:items-center">
+                  <Link
+                    href="/signup"
+                    className="group inline-flex h-12 items-center justify-center gap-2 rounded-md bg-primary px-6 text-sm font-medium text-primary-foreground shadow-[rgba(255,255,255,0.2)_0px_0.5px_0px_0px_inset,rgba(0,0,0,0.2)_0px_0px_0px_0.5px_inset,rgba(0,0,0,0.05)_0px_1px_2px_0px] transition-all hover:opacity-85 active:translate-y-px"
+                  >
+                    Host a Reunion
+                    <ArrowRight
+                      className="size-4 transition-transform group-hover:translate-x-0.5"
+                      weight="bold"
+                    />
+                  </Link>
+                  <Link
+                    href="/manifesto"
+                    className="group inline-flex h-12 items-center justify-center gap-2 rounded-md border border-border bg-background px-5 text-sm font-medium text-foreground transition-colors hover:bg-[rgba(28,28,28,0.04)]"
+                  >
+                    Read the manifesto
+                    <ArrowUpRight
+                      className="size-4 text-muted-foreground transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5"
+                      weight="bold"
+                    />
+                  </Link>
+                </div>
+              </FadeUp>
+            </div>
           </div>
 
-          <div className="hidden lg:col-span-5 lg:block lg:-translate-y-6">
-            <ReunionCardsStack recordedCount={recordedCount} />
+          {/* Right column: logo above stacked cards */}
+          <div className="hidden lg:col-span-5 lg:flex lg:flex-col lg:items-end">
+            <FadeUp className="mb-6">
+              <Image
+                src="/images/trp-logo.png"
+                alt="The Reunion Projects logo"
+                width={280}
+                height={262}
+                className="h-auto w-[280px]"
+                priority
+              />
+            </FadeUp>
+            <div className="flex-1 flex items-end">
+              <ReunionCardsStack recordedCount={recordedCount} />
+            </div>
           </div>
         </div>
       </section>
