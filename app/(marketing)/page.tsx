@@ -101,7 +101,18 @@ export default async function HomePage() {
       >
         <div className="mx-auto grid w-full max-w-7xl grid-cols-1 items-start gap-16 px-6 pb-12 pt-12 lg:flex-1 lg:grid-cols-12 lg:items-stretch lg:gap-12 lg:py-12">
           {/* Left column: headline content, vertically distributed to align with right column */}
-          <div className="lg:col-span-7 lg:flex lg:flex-col lg:justify-between">
+          <div className="lg:col-span-7 lg:flex lg:flex-col lg:justify-between lg:pb-12">
+            {/* Mobile logo - shown above headline on small screens */}
+            <FadeUp className="mb-6 lg:hidden">
+              <Image
+                src="/images/trp-logo.png"
+                alt="The Reunion Projects logo"
+                width={180}
+                height={169}
+                className="h-auto w-[180px]"
+              />
+            </FadeUp>
+
             <FadeUp>
               <h1
                 id="hero-heading"
