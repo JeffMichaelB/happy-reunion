@@ -1,7 +1,22 @@
 "use client"
 
+import Image from "next/image"
 import { motion } from "motion/react"
 import { Microphone, Waveform } from "@phosphor-icons/react"
+
+/** Fallback shown when live count is unavailable */
+const FALLBACK_COUNT = "—"
+
+/** Format eyebrow label: "REUNION 020" (zero-padded 3 digits) or "REUNION —" on fallback */
+function formatEyebrow(count: number | null | undefined): string {
+  if (count == null) return `REUNION ${FALLBACK_COUNT}`
+  return `REUNION ${String(count).padStart(3, "0")}`
+}
+
+interface ReunionCardsStackProps {
+  /** Live count of recorded reunions. Null/undefined shows fallback. */
+  recordedCount?: number | null
+}
 
 const CARDS = [
   {
@@ -13,16 +28,19 @@ const CARDS = [
     translateX: -16,
     translateY: 8,
     z: 1,
+    showCount: false,
   },
   {
-    eyebrow: "REUNION 022",
-    name: "Daniel · Founding team",
+    eyebrow: null, // Dynamic: uses live recordedCount
+    name: "Number of Reunions Recorded",
     detail: "Scheduled · Friday, 5pm",
     initials: "DK",
+    logo: "/headphones-logo.png",
     rotation: 4,
     translateX: 12,
     translateY: 0,
     z: 3,
+    showCount: true,
   },
   {
     eyebrow: "REUNION 031",
@@ -33,10 +51,14 @@ const CARDS = [
     translateX: 36,
     translateY: -28,
     z: 2,
+    showCount: false,
   },
 ] as const
 
-export function ReunionCardsStack() {
+export function ReunionCardsStack({ recordedCount }: ReunionCardsStackProps) {
+  const displayCount = recordedCount != null ? recordedCount : FALLBACK_COUNT
+  const dynamicEyebrow = formatEyebrow(recordedCount)
+
   return (
     <div className="relative mx-auto h-[380px] w-full max-w-[440px]">
       {CARDS.map((card, idx) => (
@@ -64,19 +86,42 @@ export function ReunionCardsStack() {
         >
           <div className="flex items-start justify-between">
             <p className="font-mono text-[10px] font-medium uppercase tracking-[0.14em] text-muted-foreground">
-              {card.eyebrow}
+              {card.showCount ? dynamicEyebrow : card.eyebrow}
             </p>
-            <div className="flex size-8 items-center justify-center rounded-full border border-border bg-background text-[11px] font-medium text-foreground/80">
-              {card.initials}
-            </div>
+            {"logo" in card && card.logo ? (
+              <Image
+                src={card.logo}
+                alt="Reunion Projects"
+                width={48}
+                height={29}
+                className="h-auto w-12"
+              />
+            ) : (
+              <div className="flex size-8 items-center justify-center rounded-full border border-border bg-background text-[11px] font-medium text-foreground/80">
+                {card.initials}
+              </div>
+            )}
           </div>
 
-          <p className="mt-6 font-heading text-xl font-semibold leading-tight tracking-tight text-foreground">
-            {card.name}
-          </p>
-          <p className="mt-2 font-mono text-[11px] uppercase tracking-wider text-muted-foreground">
-            {card.detail}
-          </p>
+          {card.showCount ? (
+            <>
+              <p className="mt-4 font-mono text-[10px] font-medium uppercase tracking-[0.14em] text-muted-foreground">
+                {card.name}
+              </p>
+              <p className="mt-1 font-heading text-7xl font-bold leading-none tracking-tight text-foreground">
+                {displayCount}
+              </p>
+            </>
+          ) : (
+            <>
+              <p className="mt-6 font-heading text-xl font-semibold leading-tight tracking-tight text-foreground">
+                {card.name}
+              </p>
+              <p className="mt-2 font-mono text-[11px] uppercase tracking-wider text-muted-foreground">
+                {card.detail}
+              </p>
+            </>
+          )}
 
           <div className="mt-6 flex items-center gap-3 border-t border-border pt-5">
             <div className="flex size-9 items-center justify-center rounded-full bg-foreground text-background">
